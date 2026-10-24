@@ -11,3 +11,9 @@
 - Filament 1.56.0 Android ModelViewer/FilamentAsset/Animator APIs checked against exact tagged source. Direct TransformManager writes precede updateBoneMatrices; clip playback is disabled.
 
 - app/pubspec.lock recovered directly from the successful CI dependency resolution and committed with all hosted package checksums; no hand-invented dependency hashes.
+
+- 0.3.0: User confirmed that the Android build had no camera and reported the GLB loader was not fixed. Camera was previously unimplemented, not a device configuration issue. Add independent M04/M05 camera proof while M03 visual acceptance remains open.
+- GLB composition fix: use Filament's supported TextureView constructor, keep native library initialization scoped to the rig, resolve Flutter asset paths through FlutterAssets, validate GLB framing and provide reload/error stages. Root cause on the user's device is not proven until retested.
+- Camera proof uses MediaPipe VIDEO mode on a dedicated synchronous analysis worker, rather than LIVE_STREAM callbacks. CameraX KEEP_ONLY_LATEST and bounded UI handoff avoid inference backlog and simplify image ownership. No camera data crosses Dart.
+- MPImage.close() in MediaPipe 0.10.14 recycles its Bitmap. The displayed native camera frame therefore owns a separate copy; its matching landmarks use the same upright image coordinates. Display mirroring does not change anatomical landmark identities.
+- The model is acquired at build time from Google's versioned float16/1 endpoint and bundled in the APK with its SHA-256 manifest. CI checks packaging and runtime code does not fetch models. Pin the observed checksum after first acquisition.

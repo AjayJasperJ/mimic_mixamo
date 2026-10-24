@@ -3,7 +3,10 @@ package com.ajayjasper.mimic.nativeview
 import android.content.Context
 import android.opengl.Matrix
 import android.view.Choreographer
-import android.view.SurfaceView
+import android.view.TextureView
+import android.util.Log
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import android.widget.FrameLayout
 import com.google.android.filament.utils.ModelViewer
 import com.google.android.filament.utils.Utils
@@ -16,28 +19,37 @@ import io.flutter.plugin.platform.PlatformViewFactory
 import java.nio.ByteBuffer
 import kotlin.math.sin
 
-class MimicNativePlugin : FlutterPlugin {
+class MimicNativePlugin : FlutterPlugin, ActivityAware {
+    private val cameraHost = CameraHost()
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        Utils.init()
-        binding.platformViewRegistry.registerViewFactory("mimic/rig", RigFactory(binding.binaryMessenger))
+        binding.platformViewRegistry.registerViewFactory("mimic/rig", RigFactory(binding.binaryMessenger, binding.flutterAssets.getAssetFilePathByName("assets/characters/development_humanoid.glb")))
+        binding.platformViewRegistry.registerViewFactory("mimic/camera", CameraFactory(binding.binaryMessenger, cameraHost))
     }
-    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {}
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        cameraHost.sessions.toList().forEach { it.dispose() }
+        cameraHost.detach()
+    }
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) = cameraHost.attach(binding)
+    override fun onDetachedFromActivityForConfigChanges() = cameraHost.detach()
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) = cameraHost.attach(binding)
+    override fun onDetachedFromActivity() = cameraHost.detach()
 }
 
-private class RigFactory(private val messenger: BinaryMessenger) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
-    override fun create(context: Context, viewId: Int, args: Any?): PlatformView = RigView(context, viewId, messenger)
+private class RigFactory(private val messenger: BinaryMessenger, private val assetPath: String) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
+    override fun create(context: Context, viewId: Int, args: Any?): PlatformView = RigView(context, viewId, messenger, assetPath)
 }
 
 /** All Filament calls and commands run on Android's main/render thread. */
-private class RigView(context: Context, id: Int, messenger: BinaryMessenger) : PlatformView, Choreographer.FrameCallback {
+private class RigView(context: Context, id: Int, messenger: BinaryMessenger, private val assetPath: String) : PlatformView, Choreographer.FrameCallback {
     private val channel = MethodChannel(messenger, "mimic/rig/$id")
     private var viewer: ModelViewer? = null
-    private var surface: SurfaceView? = null
+    private var surface: TextureView? = null
     private var disposed = false
     private var active = true
     private var playing = false
     private var scheduled = false
     private var error: String? = null
+    private var stage = "waiting_for_view"
     private var animationEpoch = 0L
     private var renderedFrames = 0L
     private val angles = floatArrayOf(0f, 0f, 0f, 0f)
@@ -50,7 +62,7 @@ private class RigView(context: Context, id: Int, messenger: BinaryMessenger) : P
         }
         override fun onDetachedFromWindow() {
             stopFrames()
-            // ModelViewer destroys its owned engine on SurfaceView detach.
+            // ModelViewer destroys its owned engine on TextureView detach.
             viewer = null
             joints.clear()
             removeAllViews()
@@ -63,8 +75,8 @@ private class RigView(context: Context, id: Int, messenger: BinaryMessenger) : P
         channel.setMethodCallHandler { call, result ->
             if (disposed) { result.error("disposed", "Rig view was disposed", null); return@setMethodCallHandler }
             when (call.method) {
-                "status" -> result.success(mapOf("ready" to (viewer != null && joints.size == 4 && error == null),
-                    "error" to error, "jointCount" to joints.size, "renderedFrames" to renderedFrames,
+                "status" -> result.success(mapOf("ready" to (viewer != null && joints.size == 4 && error == null && surface?.isAvailable == true && renderedFrames > 0 && stage == "rendering"),
+                    "error" to error, "stage" to stage, "textureReady" to (surface?.isAvailable == true), "jointCount" to joints.size, "renderedFrames" to renderedFrames,
                     "asset" to "Mimic original development humanoid", "trackingImplemented" to false))
                 "setPose" -> {
                     val values = call.argument<List<Number>>("angles")
@@ -83,6 +95,17 @@ private class RigView(context: Context, id: Int, messenger: BinaryMessenger) : P
                     if (active) schedule() else stopFrames()
                     result.success(null)
                 }
+                "reload" -> {
+                    stopFrames()
+                    viewer = null
+                    joints.clear()
+                    container.removeAllViews()
+                    surface = null
+                    error = null
+                    renderedFrames = 0
+                    if (container.isAttachedToWindow) attachRenderer()
+                    result.success(null)
+                }
                 "reset" -> { angles.fill(0f); playing = false; schedule(); result.success(null) }
                 else -> result.notImplemented()
             }
@@ -93,12 +116,20 @@ private class RigView(context: Context, id: Int, messenger: BinaryMessenger) : P
         if (viewer != null || disposed) return
         error = null
         try {
-            val nextSurface = SurfaceView(container.context)
+            stage = "initializing_filament"
+            Utils.init()
+            val bytes = container.context.assets.open(assetPath).use { it.readBytes() }
+            GlbContract.validateHeader(bytes)
+            val nextSurface = TextureView(container.context)
             container.addView(nextSurface, FrameLayout.LayoutParams(-1, -1))
             surface = nextSurface
             val next = ModelViewer(nextSurface)
             viewer = next
-            val bytes = container.context.assets.open("flutter_assets/assets/characters/development_humanoid.glb").use { it.readBytes() }
+            stage = "loading_glb"
+            next.renderer.clearOptions = next.renderer.clearOptions.apply {
+                clear = true
+                clearColor = floatArrayOf(.04f, .06f, .09f, 1f)
+            }
             val buffer = ByteBuffer.allocateDirect(bytes.size).apply { put(bytes); flip() }
             next.loadModelGlb(buffer)
             val asset = requireNotNull(next.asset) { "GLB loader returned no asset" }
@@ -112,14 +143,22 @@ private class RigView(context: Context, id: Int, messenger: BinaryMessenger) : P
                 tm.getTransform(instance, rest)
                 joints[name] = Pair(instance, rest)
             }
+            stage = "waiting_for_texture"
             schedule()
         } catch (failure: Exception) {
-            error = failure.message ?: failure.javaClass.simpleName
+            error = "$stage: ${failure.message ?: failure.javaClass.simpleName}"
+            Log.e("MimicRig", error, failure)
+            stage = "error"
             stopFrames()
             viewer = null
             joints.clear()
             container.removeAllViews()
             surface = null
+        } catch (failure: LinkageError) {
+            error = "Native 3D library could not load: ${failure.message}"
+            stage = "error"
+            Log.e("MimicRig", error, failure)
+            stopFrames()
         }
     }
 
@@ -153,10 +192,15 @@ private class RigView(context: Context, id: Int, messenger: BinaryMessenger) : P
             }
             // No clip playback: local bone transforms drive actual skin matrices.
             current.animator?.updateBoneMatrices()
-            current.render(frameTimeNanos)
-            renderedFrames++
+            if (surface?.isAvailable == true && (surface?.width ?: 0) > 0 && (surface?.height ?: 0) > 0) {
+                current.render(frameTimeNanos)
+                renderedFrames++
+                stage = if (current.progress >= 1f) "rendering" else "loading_resources"
+            }
         } catch (failure: Exception) {
-            error = failure.message ?: "Render failure"
+            error = "$stage: ${failure.message ?: "Render failure"}"
+            stage = "error"
+            Log.e("MimicRig", error, failure)
         }
         schedule()
     }

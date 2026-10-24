@@ -8,3 +8,12 @@
 - Linux remains a diagnostic joint hierarchy diagram. Android native plugin registration is omitted by Flutter on Linux.
 
 No camera, pose inference, calibration or live retargeting exists yet. Follow M03 physical evidence gate before calling the rendering phase complete.
+
+
+## 0.3.0 camera proof and loader recovery
+
+CameraHost owns Activity permission/result hooks and foreground lifecycle. CameraSessionView owns one custom LifecycleRegistry, CameraX analysis use case and serial CPU inference executor. Stop/switch/dispose advance an epoch; old callbacks are rejected. Only that view's CameraX use case is unbound. The UI handoff is one AtomicReference plus at most one pending main-thread delivery, not a queue of frames.
+
+CameraCanvas displays the exact upright bitmap used for inference and its corresponding landmarks under one fit-center transform. Preview mirror applies to image and overlay together, without mirroring the input given to MediaPipe. MPImage input is closed after synchronous detection, and a separate display bitmap prevents SDK recycling from invalidating the preview.
+
+GLB rendering now uses ModelViewer(TextureView), not SurfaceView. Both renderers remain separate proof screens. No camera-to-rig mapping is claimed.

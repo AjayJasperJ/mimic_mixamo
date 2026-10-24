@@ -17,6 +17,8 @@ class _RigLabState extends State<RigLab> with WidgetsBindingObserver {
   String _status = 'Preparing native renderer';
   bool _playing = false;
   bool _polling = false;
+  bool _loadError = false;
+  var _openedAt = DateTime.now();
   bool get _android => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
   @override
   void initState() { super.initState(); WidgetsBinding.instance.addObserver(this); }
@@ -37,9 +39,12 @@ class _RigLabState extends State<RigLab> with WidgetsBindingObserver {
     try {
       final value = await _native?.invokeMapMethod<String, Object?>('status');
       if (mounted && value != null) setState(() {
+        _loadError = value['error'] != null;
         _status = value['error']?.toString() ?? (value['ready'] == true
           ? 'GLB loaded • ${value['jointCount']} controllable joints • ${value['renderedFrames']} frame callbacks'
-          : 'Loading development rig');
+          : DateTime.now().difference(_openedAt).inSeconds > 10
+            ? 'Renderer waiting at ${value['stage']}. Tap Reload model to retry.'
+            : 'Loading development rig: ${value['stage']}');
       });
     } on PlatformException catch (error) { if (mounted) setState(() => _status = error.message ?? error.code); }
     on MissingPluginException { if (mounted) setState(() => _status = 'Native plugin unavailable in this build'); }
@@ -69,9 +74,13 @@ class _RigLabState extends State<RigLab> with WidgetsBindingObserver {
         ? AndroidView(viewType: 'mimic/rig', onPlatformViewCreated: _created)
         : CustomPaint(painter: RigDiagram(_pose))),
       const SizedBox(height: 12),
-      Text(_android ? _status : 'Linux: joint hierarchy preview. Native Filament skinning is Android-only.'),
+      SelectableText(_android ? _status : 'Linux: joint hierarchy preview. Native Filament skinning is Android-only.', style: TextStyle(color: _loadError ? Colors.redAccent : null)),
       const SizedBox(height: 12),
       Wrap(spacing: 12, runSpacing: 8, children: [
+        if (_android) OutlinedButton(onPressed: () {
+          setState(() { _loadError = false; _playing = false; _status = 'Reloading GLB'; _openedAt = DateTime.now(); });
+          _command('reload');
+        }, child: const Text('Reload model')),
         OutlinedButton(onPressed: () {
           setState(() { _pose = const RigPose(); _playing = false; });
           _command('reset');
@@ -88,7 +97,7 @@ class _RigLabState extends State<RigLab> with WidgetsBindingObserver {
           _command('setPose', {'angles': _pose.angles});
         }),
       ],
-      const Text('No camera tracking yet. Check each arm independently, restore the T-pose, then leave and reopen this screen 10 times. Report blank frames, mesh distortion or crashes.'),
+      const Text('Live camera skeleton is on the separate camera screen; avatar retargeting is pending. Check each arm independently, restore the T-pose, then leave and reopen this screen 10 times. Report blank frames, mesh distortion or crashes.'),
     ]),
   );
 }

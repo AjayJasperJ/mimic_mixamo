@@ -13,3 +13,6 @@
 Generated development model geometry and rig may be reused under CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). This statement applies to the generated placeholder asset, not an unseen owner asset or the entire application.
 
 Transitive native dependency notices and final distribution audit remain pending before a production release. The current APK is a development test build.
+
+
+0.3.0 additions: CameraX camera-core/camera-camera2/camera-lifecycle **1.3.4**, AndroidX lifecycle-runtime-ktx **2.7.0** (Apache-2.0), MediaPipe Tasks Vision **0.10.14** (Apache-2.0 code), and Google's versioned Pose Landmarker Lite **float16/1** bundle. Model source and actual checksum are embedded as pose_model_manifest.json in the APK. The model bundle is distinct from the code license; retain upstream terms and complete the model redistribution audit before a production release. No claim that every model inherits the SDK code license is made.

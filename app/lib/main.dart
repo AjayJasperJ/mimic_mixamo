@@ -1,12 +1,13 @@
 import 'dart:math' as math;
 import 'features/rig/rig_lab.dart';
+import 'features/camera/camera_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 void main() {
   LicenseRegistry.addLicense(() async* {
-    yield LicenseEntryWithLineBreaks(['Filament 1.56.0'],
+    yield LicenseEntryWithLineBreaks(['Filament 1.56.0', 'CameraX 1.3.4', 'MediaPipe Tasks 0.10.14'],
       await rootBundle.loadString('assets/notices/FILAMENT_APACHE_2_0.txt'));
   });
   runApp(const MimicApp());
@@ -59,16 +60,18 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
   }
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('MIMIC / motion lab')),
+    appBar: AppBar(title: const Text('MIMIC / motion lab · 0.3.0')),
     body: SafeArea(child: Center(child: ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 1000),
       child: ListView(padding: const EdgeInsets.all(24), children: [
         const Text('Your movement. A new character.', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        const Text('Foundation preview • Synthetic pose only', style: TextStyle(color: Color(0xff69dfbf))),
+        const Text('Android camera tracking • manual rig lab', style: TextStyle(color: Color(0xff69dfbf))),
+        const SizedBox(height: 16),
+        FilledButton.icon(onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CameraScreen())), icon: const Icon(Icons.videocam), label: const Text('Open camera tracking')),
         const SizedBox(height: 16),
         Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Camera tracking and 3D character loading are not implemented yet.'),
+          const Text('Synthetic simulator below. Open camera tracking for the live Android skeleton, or rig control proof for the 3D model.'),
           const SizedBox(height: 8),
           Text(_playing ? 'Simulator running' : 'Simulator paused', key: const Key('session-status')),
           SizedBox(height: 320, width: double.infinity, child: AnimatedBuilder(animation: _clock,
@@ -85,9 +88,9 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
         const SizedBox(height: 24),
         const Text('Manual elbow bend'),
         Slider(value: _bend, onChanged: _playing ? null : (value) => setState(() => _bend = value)),
-        const Text('Linux preview tests the interface and synthetic joint motion. Android CameraX, MediaPipe and Filament integration are pending. No camera frames are captured.'),
+        const Text('Linux supports the interface and joint diagram. Android has separate camera skeleton and 3D rig screens. The synthetic simulator does not capture camera frames.'),
         const SizedBox(height: 24),
-        const Text('Next gate: approved rigged GLB → direct shoulder and elbow control → camera landmarks.', style: TextStyle(color: Colors.white70)),
+        const Text('Next gate: verify camera landmarks and GLB rendering on your Android phone before calibrated retargeting.', style: TextStyle(color: Colors.white70)),
       ]),
     ))),
   );

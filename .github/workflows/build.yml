@@ -67,6 +67,7 @@ jobs:
           cache-dependency-path: |
             app/packages/mimic_native/android/build.gradle
             app/pubspec.lock
+            app/android/app/build.gradle.kts
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.35.7'
@@ -75,9 +76,16 @@ jobs:
       - name: Check development asset contract
         run: python3 -m unittest discover -s tools/python -p 'test_*.py' -v
       - run: bash tools/bootstrap.sh
+      - name: Bundle versioned offline pose model
+        run: python3 tools/python/fetch_pose_model.py
       - name: Build debug APK
         working-directory: app
         run: flutter build apk --debug
+      - name: Native GLB container tests
+        working-directory: app/android
+        run: bash ./gradlew :mimic_native:testDebugUnitTest
+      - name: Verify packaged camera and GLB assets
+        run: python3 tools/python/verify_apk.py app/build/app/outputs/flutter-apk/app-debug.apk
       - name: Package APK
         run: |
           mkdir -p dist
@@ -139,7 +147,7 @@ jobs:
           cat > notes.md <<EOF
           <!-- mimic-managed-test-release -->
           Automated test build from commit $GITHUB_SHA.
-          Linux x86_64 preview and Android debug APK. Includes the development rig-control milestone. Camera tracking remains pending; Android visual/device acceptance is not yet verified.
+          Linux x86_64 preview and Android debug APK. Android includes a camera body-skeleton screen and GLB loader recovery fixes. Avatar retargeting and physical-device acceptance remain pending. Linux has the rig diagram only.
           Extract the Linux archive and run ./mimic_mixamo with lib/ and data/ alongside it.
           Only the newest successful automatic test release is retained.
           EOF
