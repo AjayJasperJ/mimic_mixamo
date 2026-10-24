@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'rig_pose.dart';
+import 'desktop_glb_view.dart';
 
 class RigLab extends StatefulWidget {
   const RigLab({super.key});
@@ -72,9 +73,9 @@ class _RigLabState extends State<RigLab> with WidgetsBindingObserver {
       const SizedBox(height: 12),
       SizedBox(height: 350, child: _android
         ? AndroidView(viewType: 'mimic/rig', onPlatformViewCreated: _created)
-        : CustomPaint(painter: RigDiagram(_pose))),
+        : DesktopGlbView(pose: _pose)),
       const SizedBox(height: 12),
-      SelectableText(_android ? _status : 'Linux: joint hierarchy preview. Native Filament skinning is Android-only.', style: TextStyle(color: _loadError ? Colors.redAccent : null)),
+      SelectableText(_android ? _status : 'Linux: skinned GLB mesh preview. Drag to rotate; use the joint controls below.', style: TextStyle(color: _loadError ? Colors.redAccent : null)),
       const SizedBox(height: 12),
       Wrap(spacing: 12, runSpacing: 8, children: [
         if (_android) OutlinedButton(onPressed: () {

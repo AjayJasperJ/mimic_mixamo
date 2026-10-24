@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Mimic
+Comment=Local webcam skeleton tracking and skinned GLB motion lab
+Exec=mimic_mixamo
+Icon=mimic
+Categories=Utility;Graphics;
+Terminal=false

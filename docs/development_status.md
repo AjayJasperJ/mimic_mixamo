@@ -1,17 +1,19 @@
-# Development status — 2026-10-24 / 0.3.0
+# Development status — 0.4.0 / 24 October 2026
 
-Current tasks: reported GLB loader failure (M03) and Android camera/skeleton proof (M04/M05).
+Current tasks: Linux webcam tracking and single-file AppImage distribution, explicitly requested by owner.
 
-Baseline test-build-8 compiled both platforms and passed five Flutter tests plus four Python asset checks. User has installed Android and reports no camera/skeleton and a broken GLB loader. Camera was absent from that build; its absence was not a permission/configuration issue.
+Prior Android baseline: 0.3.0 camera and GLB recovery build passed CI run 40070114705, including both builds, native contract tests and actual APK asset/permission checks. Physical Android GLB visual acceptance remains pending after the reported failure.
 
-Changes: Android camera permission/Activity lifecycle host, CameraX analysis, bundled MediaPipe Pose Landmarker Lite, native camera frame + matching skeleton Canvas, front/back switching, permission recovery and bounded newest-frame delivery. No camera recording/upload. Independent camera screen opens from home. Model is packaged at build time.
+0.4.0 implementation:
+- Linux V4L2 webcam discovery, local MediaPipe/OpenCV inference and matching preview/skeleton. Worker is packaged with Python and its dependencies; no runtime pip/model download.
+- One-frame credit protocol over local stdio; UI epoch invalidation on restart. Stop/back/background sends stop and terminates a worker that does not exit, so no camera process should remain.
+- Linux desktop loads the actual bundled skinned GLB, applies joint-local transforms and inverse bind matrices, and displays triangles with drag-to-rotate. This is scoped to the development asset and is not arbitrary GLB import support.
+- CI builds Mimic-x86_64.AppImage, performs real blank-image model inference in the frozen worker and packaged AppImage, and smoke-launches the packaged GUI. Release assets now use the AppImage instead of the old tar archive.
 
-GLB corrections: TextureView composition, Flutter asset-path resolution, binary header validation, phase/error diagnostics, Reload model control and native library failure reporting. These are proposed fixes for the reported runtime failure; physical visual verification is NOT RUN.
+Validation: no physical webcam or Flutter SDK in local agent environment. Standard-library worker device listing executed and found no webcams. Shell/YAML syntax checks and Python asset contracts run locally. New Dart, frozen inference and AppImage checks must pass CI before claiming build success. Blank-image inference is not webcam/accuracy acceptance.
 
-Validation: Python asset checks locally PASS. Flutter/Android tools unavailable locally. CI run 40070114705 passed Flutter analysis/tests, native GLB and overlay geometry unit tests, both builds, Linux smoke launch, and actual APK model/GLB/permission packaging verification. Published test-build-9. The 5,777,746-byte pose model checksum is pinned from that successful acquisition. No device results are claimed.
+M03: Linux GLB implementation added; Android visual gate remains pending phone retest.
+M04/M05: Android implemented/compiled baseline; Linux implementation pending CI and physical webcam acceptance.
+M06–M14: TODO. Camera skeleton does not drive the avatar yet. Calibration, full-body retargeting and performance targets are not verified.
 
-M03 visual gate: IN_PROGRESS / user-reported failure pending retest.
-M04/M05: IMPLEMENTED; CI passed, physical-device acceptance pending. Overlay alignment, permission deny/regrant, front/back, rotation, background/resume and offline launch still need phone tests.
-M06–M14: TODO. Camera skeleton does not drive the avatar yet. Calibration/retargeting/full-body performance are not implemented.
-
-Next: install the newest 0.3.0 APK, verify camera overlay and GLB separately, and record phone model and observed load-stage errors if rendering fails. Do not mark M03 complete until the phone shows the skinned character and passes neutral restore/reload cycles.
+Next: resolve CI failures, publish AppImage only after its packaged tracker and GUI checks pass, then execute docs/linux_testing.md with a real webcam. Preserve honest device-tested/untested labels.

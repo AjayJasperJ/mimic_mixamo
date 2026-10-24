@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+MIMIC_APPDIR="${APPDIR:-$(cd "$(dirname "$0")" && pwd)}"
+export MIMIC_TRACKER_EXECUTABLE="$MIMIC_APPDIR/usr/lib/mimic-tracker/mimic-tracker"
+export LD_LIBRARY_PATH="$MIMIC_APPDIR/usr/lib:$MIMIC_APPDIR/usr/bin/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export MPLBACKEND=Agg
+export MPLCONFIGDIR="${XDG_CACHE_HOME:-$HOME/.cache}/mimic/matplotlib"
+mkdir -p "$MPLCONFIGDIR"
+if [[ "${1:-}" == --tracker-self-test ]]; then
+  shift
+  exec "$MIMIC_TRACKER_EXECUTABLE" --self-test "$@"
+fi
+if [[ "${1:-}" == --tracker-list-devices ]]; then
+  exec "$MIMIC_TRACKER_EXECUTABLE" --list-devices
+fi
+echo MIMIC_LAUNCH_READY >&2
+exec "$MIMIC_APPDIR/usr/bin/mimic_mixamo" "$@"

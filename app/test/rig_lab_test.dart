@@ -12,7 +12,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(const MaterialApp(home: RigLab()));
-    expect(find.textContaining('Linux: joint hierarchy preview'), findsOneWidget);
+    expect(find.textContaining('Linux: skinned GLB mesh preview'), findsOneWidget);
     expect(find.byType(AndroidView), findsNothing);
     await tester.drag(find.byKey(const ValueKey('joint-1')), const Offset(100, 0));
     await tester.pump();

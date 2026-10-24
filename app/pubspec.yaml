@@ -1,12 +1,13 @@
 name: mimic_mixamo
 description: Offline character motion tracking development shell.
 publish_to: none
-version: 0.3.0+3
+version: 0.4.0+4
 environment:
   sdk: '>=3.9.0 <4.0.0'
 dependencies:
   flutter:
     sdk: flutter
+  vector_math: 2.2.0
   mimic_native:
     path: packages/mimic_native
 dev_dependencies:

@@ -13,3 +13,7 @@ app/assets/characters/development_humanoid.glb
 
 app/packages/mimic_native/android/src/main/assets/*.task
 app/packages/mimic_native/android/src/main/assets/pose_model_manifest.json
+
+build/
+dist/
+*.spec

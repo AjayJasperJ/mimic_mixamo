@@ -17,3 +17,13 @@ CameraHost owns Activity permission/result hooks and foreground lifecycle. Camer
 CameraCanvas displays the exact upright bitmap used for inference and its corresponding landmarks under one fit-center transform. Preview mirror applies to image and overlay together, without mirroring the input given to MediaPipe. MPImage input is closed after synchronous detection, and a separate display bitmap prevents SDK recycling from invalidating the preview.
 
 GLB rendering now uses ModelViewer(TextureView), not SurfaceView. Both renderers remain separate proof screens. No camera-to-rig mapping is claimed.
+
+## Linux 0.4.0
+
+Flutter LinuxTracker owns the bundled worker process, its stdio and an epoch. A credit requests one camera read + synchronous inference + JPEG/landmark pair. The next credit is delayed until the previous response has been handled. Stop/disposal invalidates old callbacks and closes/terminates the process. Webcam selection is explicit; discovery reads device names without opening camera capture.
+
+LinuxCameraView overlays landmarks in the same fit-center image rectangle and mirrors both together. The bundle opens no HTTP/TCP service and saves no footage. Android's native pipeline is unchanged.
+
+GlbMesh reads the bundled development GLB's embedded accessors, nodes, weights and inverse binds; joint world matrices are multiplied by inverse bind matrices before vertices are projected. DesktopGlbView draws depth-sorted triangles and supports a simple orbit gesture. Only the original tiny untextured single-mesh/single-skin asset is in scope.
+
+AppRun launches Flutter or bundled tracker diagnostics from one AppImage. linuxdeploy bundles GTK dependencies; PyInstaller bundles the Python worker and package libraries. CI tests the actual image with real model inference on a synthetic blank frame, then a headless GUI launch. A physical webcam run remains separate acceptance evidence.

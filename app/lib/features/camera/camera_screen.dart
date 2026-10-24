@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'linux_camera_view.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -18,6 +19,7 @@ class _CameraScreenState extends State<CameraScreen> {
   int _landmarks = 0;
   int _inferenceMs = 0;
   String _camera = 'front';
+  bool get _linux => !kIsWeb && defaultTargetPlatform == TargetPlatform.linux;
   bool get _android => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
   Future<void> _command(String command) async {
     try { await _channel?.invokeMethod<void>(command); }
@@ -57,14 +59,16 @@ class _CameraScreenState extends State<CameraScreen> {
     body: ListView(padding: const EdgeInsets.all(20), children: [
       const Text('Allow camera access, then stand where your body is visible. Frames stay on this device and are not recorded.'),
       const SizedBox(height: 12),
-      SizedBox(height: 420, child: _android
+      SizedBox(height: _linux ? 520 : 420, child: _linux
+        ? const LinuxCameraView()
+        : _android
         ? AndroidView(viewType: 'mimic/camera', onPlatformViewCreated: _created)
-        : const Center(child: Text('Live camera tracking is available in the Android APK. Linux currently supports the rig diagram only.'))),
+        : const Center(child: Text('Camera tracking is currently supported on Android and Linux.'))),
       const SizedBox(height: 12),
-      Text(_android ? _status : 'Linux camera support is not implemented'),
+      if (!_linux) Text(_android ? _status : 'Camera unavailable on this platform'),
       if (_android) Text('$_camera camera • $_frames processed frames • $_landmarks visible landmarks • inference $_inferenceMs ms'),
       const SizedBox(height: 12),
-      Wrap(spacing: 10, runSpacing: 10, children: [
+      if (!_linux) Wrap(spacing: 10, runSpacing: 10, children: [
         FilledButton(onPressed: _android ? () => _command('start') : null, child: const Text('Start camera')),
         OutlinedButton(onPressed: _android ? () => _command('stop') : null, child: const Text('Stop camera')),
         OutlinedButton(onPressed: _android ? () => _command('switchCamera') : null, child: const Text('Switch front/back')),
