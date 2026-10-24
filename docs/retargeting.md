@@ -12,7 +12,7 @@ MediaPipe capture timestamps are used only for ordering. Source and Dart clocks 
 
 ## Calibration
 
-Start a camera or the clearly labelled replay, then select Calibrate T-pose. Show shoulders, elbows, wrists and hips; full-body beta additionally requires knees and ankles. Hold straight horizontal arms, and straight legs in full-body mode. Calibration requires at least 15 valid samples over 1.5 seconds. Small image framing, bent arms, low confidence, coincident landmarks and unstable positions reset progress with guidance.
+Start a camera or the clearly labelled replay, then select Calibrate T-pose. Show shoulders, elbows, wrists and hips; full-body beta additionally requires knees and ankles. Hold straight horizontal arms, and straight legs in full-body mode. Calibration requires at least 15 valid samples over 1.5 seconds. Landmark stability is measured against the first accepted calibration sample (8 cm in world landmarks and 0.045 normalized image-coordinate distance), so adjacent-frame model jitter does not repeatedly restart progress. Larger movement, small image framing, bent arms, low confidence and coincident landmarks still reset progress with guidance. These are initial thresholds and need physical-camera tuning.
 
 A mean orthonormal torso basis establishes the neutral reference. Per-bone neutral orientation corrections align this specific rig to that reference. Successful calibration clears old filters. Thresholds are initial tuning values and require real-device evaluation.
 
