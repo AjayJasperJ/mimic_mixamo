@@ -1,0 +1,9 @@
+app/.dart_tool/
+app/build/
+app/.flutter-plugins*
+app/android/local.properties
+app/android/.gradle/
+app/linux/flutter/ephemeral/
+*.jks
+*.keystore
+key.properties
