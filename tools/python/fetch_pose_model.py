@@ -7,8 +7,8 @@ from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parents[2]
 URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task'
-# Populated with the observed upstream digest after first CI acquisition.
-EXPECTED_SHA256 = None
+# Verified against the versioned upstream bundle acquired in successful CI run 40070114705.
+EXPECTED_SHA256 = '59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a'
 
 
 def fetch():

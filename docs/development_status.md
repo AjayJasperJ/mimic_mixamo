@@ -8,10 +8,10 @@ Changes: Android camera permission/Activity lifecycle host, CameraX analysis, bu
 
 GLB corrections: TextureView composition, Flutter asset-path resolution, binary header validation, phase/error diagnostics, Reload model control and native library failure reporting. These are proposed fixes for the reported runtime failure; physical visual verification is NOT RUN.
 
-Validation: Python asset checks locally PASS. Flutter/Android tools unavailable locally. CI must run Flutter analysis/tests, native GLB and overlay geometry unit tests, both builds, Linux smoke launch, and actual APK model/GLB/permission packaging verification. No device results are claimed.
+Validation: Python asset checks locally PASS. Flutter/Android tools unavailable locally. CI run 40070114705 passed Flutter analysis/tests, native GLB and overlay geometry unit tests, both builds, Linux smoke launch, and actual APK model/GLB/permission packaging verification. Published test-build-9. The 5,777,746-byte pose model checksum is pinned from that successful acquisition. No device results are claimed.
 
 M03 visual gate: IN_PROGRESS / user-reported failure pending retest.
-M04/M05: IMPLEMENTED, CI and physical-device acceptance pending. Overlay alignment, permission deny/regrant, front/back, rotation, background/resume and offline launch still need phone tests.
+M04/M05: IMPLEMENTED; CI passed, physical-device acceptance pending. Overlay alignment, permission deny/regrant, front/back, rotation, background/resume and offline launch still need phone tests.
 M06–M14: TODO. Camera skeleton does not drive the avatar yet. Calibration/retargeting/full-body performance are not implemented.
 
-Next: resolve CI failures; pin acquired model SHA-256; install the newest 0.3.0 APK, verify camera overlay and GLB separately, and record phone model and observed load-stage errors if rendering fails. Do not mark M03 complete until the phone shows the skinned character and passes neutral restore/reload cycles.
+Next: install the newest 0.3.0 APK, verify camera overlay and GLB separately, and record phone model and observed load-stage errors if rendering fails. Do not mark M03 complete until the phone shows the skinned character and passes neutral restore/reload cycles.
