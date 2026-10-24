@@ -83,3 +83,78 @@ jobs:
           path: dist/
           if-no-files-found: error
           retention-days: 30
+
+  release:
+    name: Publish latest test release
+    needs: [linux, android]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: mimic-linux-x86_64-${{ github.sha }}
+          path: downloads/linux
+      - uses: actions/download-artifact@v4
+        with:
+          name: mimic-android-debug-${{ github.sha }}
+          path: downloads/android
+      - name: Verify and prepare release assets
+        run: |
+          (cd downloads/linux && sha256sum -c SHA256SUMS)
+          (cd downloads/android && sha256sum -c SHA256SUMS)
+          mkdir release-assets
+          cp downloads/linux/mimic-linux-x86_64.tar.gz release-assets/
+          cp downloads/android/mimic-debug.apk release-assets/
+          cp downloads/linux/BUILD_INFO.txt release-assets/LINUX_BUILD_INFO.txt
+          cp downloads/android/BUILD_INFO.txt release-assets/ANDROID_BUILD_INFO.txt
+          cp downloads/linux/README.md release-assets/README.md
+          cd release-assets
+          sha256sum mimic-linux-x86_64.tar.gz mimic-debug.apk > SHA256SUMS
+      - name: Publish before removing previous test releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # An old workflow rerun must not replace a newer main build.
+          head_sha=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
+          if [ "$head_sha" != "$GITHUB_SHA" ]; then
+            echo "Main has advanced; skipping stale release."
+            exit 0
+          fi
+          tag="test-build-$GITHUB_RUN_NUMBER"
+          cat > notes.md <<EOF
+          <!-- mimic-managed-test-release -->
+          Automated test build from commit $GITHUB_SHA.
+          Linux x86_64 preview and Android debug APK. Camera tracking and 3D rig integration remain pending.
+          Extract the Linux archive and run ./mimic_mixamo with lib/ and data/ alongside it.
+          Only the newest successful automatic test release is retained.
+          EOF
+          # Resume an interrupted draft safely; leave a published release immutable.
+          if gh release view "$tag" --json isDraft > existing.json 2>/dev/null; then
+            if [ "$(jq -r .isDraft existing.json)" = true ]; then
+              gh release upload "$tag" release-assets/* --clobber
+              gh release edit "$tag" --draft=false --prerelease --notes-file notes.md
+            fi
+          else
+            gh release create "$tag" release-assets/* --target "$GITHUB_SHA" \
+              --title "Mimic test build $GITHUB_RUN_NUMBER" --notes-file notes.md --prerelease
+          fi
+          # Confirm publication and essential assets before any deletion.
+          gh release view "$tag" --json isDraft,assets > published.json
+          jq -e '.isDraft == false and ([.assets[].name] | index("mimic-linux-x86_64.tar.gz") != null and index("mimic-debug.apk") != null and index("SHA256SUMS") != null)' published.json
+          gh api --paginate "repos/$GH_REPO/releases?per_page=100" \
+            --jq '.[] | select(.prerelease == true) | select((.body // "") | contains("<!-- mimic-managed-test-release -->")) | .tag_name' > candidates.txt
+          while IFS= read -r old_tag; do
+            if [[ "$old_tag" =~ ^test-build-([0-9]+)$ ]]; then
+              old_run="${BASH_REMATCH[1]}"
+              if (( old_run < GITHUB_RUN_NUMBER )); then
+                gh release delete "$old_tag" --yes --cleanup-tag
+              fi
+            fi
+          done < candidates.txt

@@ -4,7 +4,7 @@ Flutter + native Android character motion tracking project. **Foundation preview
 
 ## Download a test build
 
-Open [GitHub Actions](https://github.com/AjayJasperJ/mimic_mixamo/actions/workflows/build.yml), select the latest successful run, and download its artifact (GitHub sign-in required). Every push and pull request builds Linux x86_64 and an Android debug APK; manual runs are also enabled. Artifacts expire after 30 days.
+Download the newest tagged build from [Releases](https://github.com/AjayJasperJ/mimic_mixamo/releases). After both main-branch builds succeed, CI publishes a prerelease named `test-build-<run number>` with the Linux archive, debug APK and checksums. Only after publication, it deletes older automatic test releases and their tags. Manual/versioned releases are preserved. Failed builds leave the previous test release available.\n\nAlternatively, open [GitHub Actions](https://github.com/AjayJasperJ/mimic_mixamo/actions/workflows/build.yml), select the latest successful run, and download its artifact (GitHub sign-in required). Every push and pull request builds Linux x86_64 and an Android debug APK; manual runs are also enabled. Artifacts expire after 30 days.
 
 Linux: unzip the artifact, verify `sha256sum -c SHA256SUMS`, extract the `.tar.gz`, then run `./mimic_mixamo` inside the extracted bundle. Keep `lib/` and `data/` alongside the executable. Baseline Ubuntu 22.04+ x86_64 with GTK3 runtime: `sudo apt-get install libgtk-3-0 libstdc++6`. Other distributions have not been validated.
 
