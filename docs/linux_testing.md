@@ -26,7 +26,7 @@ Diagnostics from the same AppImage:
 ./Mimic-x86_64.AppImage --tracker-self-test
 ```
 
-Development builds can set `MIMIC_TRACKER_EXECUTABLE` to a frozen helper built by tools/linux/build_appimage.sh. End users should use the AppImage. Build dependencies are pinned in tools/linux/requirements.txt; packaging tools have pinned versions and SHA-256 checks.
+In `flutter run -d linux` debug mode, the app falls back to `tools/linux/mimic_tracker.py` to enumerate `/dev/video*` devices. Starting inference also needs the pinned Python dependencies and the fetched `pose_landmarker_lite.task`; run `python3 tools/python/fetch_pose_model.py` and install `tools/linux/requirements.txt` in the development Python 3.10 environment. A frozen helper can instead be selected with `MIMIC_TRACKER_EXECUTABLE`. This source fallback is debug-only; end users should use the AppImage, which bundles Python, dependencies and model. Packaging tools have pinned versions and SHA-256 checks.
 
 ## 0.5.0 live retargeting
 

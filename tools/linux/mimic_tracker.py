@@ -34,7 +34,13 @@ def emit(value):
 
 def default_model():
     # PyInstaller onedir puts added data in _internal, represented by _MEIPASS.
-    return Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parent))/'pose_landmarker_lite.task'
+    bundled=Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parent))/'pose_landmarker_lite.task'
+    if bundled.is_file():
+        return bundled
+    # `flutter run -d linux` uses the source worker. The model fetch script
+    # stores its development copy in the committed local plugin's asset tree.
+    source=Path(__file__).resolve().parents[2]/'app/packages/mimic_native/android/src/main/assets/pose_landmarker_lite.task'
+    return source if source.is_file() else bundled
 
 
 def run(args):

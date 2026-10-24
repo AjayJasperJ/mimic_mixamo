@@ -315,23 +315,46 @@ class LinuxSkeletonPainter extends CustomPainter {
           valid(points[pair.$2]))
         canvas.drawLine(point(points[pair.$1]), point(points[pair.$2]), paint);
     }
-    // MediaPipe's pose graph has no neck edge. Draw a display-only connector
-    // from the shoulder midpoint to the ear midpoint so the live overlay joins
-    // the head to the torso. This is not a tracked avatar joint.
-    if (points.length > 12 && [7, 8, 11, 12].every((i) => valid(points[i]))) {
-      final leftEar = point(points[7]), rightEar = point(points[8]);
+    // MediaPipe has no neck landmark. Use the ear midpoint when available,
+    // then fall back toward the nose so low ear confidence cannot remove the
+    // chest-to-head bridge from the live skeleton. This is display-only.
+    if (points.length > 12 && [11, 12].every((i) => valid(points[i]))) {
       final leftShoulder = point(points[11]), rightShoulder = point(points[12]);
-      final headBase = Offset(
-        (leftEar.dx + rightEar.dx) / 2,
-        (leftEar.dy + rightEar.dy) / 2,
-      );
       final shoulderCenter = Offset(
         (leftShoulder.dx + rightShoulder.dx) / 2,
         (leftShoulder.dy + rightShoulder.dy) / 2,
       );
-      canvas.drawLine(shoulderCenter, headBase, paint..strokeWidth = 4);
-      canvas.drawCircle(shoulderCenter, 4, paint);
-      canvas.drawCircle(headBase, 4, paint);
+      final headBase = points.length > 8 && valid(points[7]) && valid(points[8])
+          ? Offset(
+              (point(points[7]).dx + point(points[8]).dx) / 2,
+              (point(points[7]).dy + point(points[8]).dy) / 2,
+            )
+          : valid(points[0])
+          ? shoulderCenter + (point(points[0]) - shoulderCenter) * .72
+          : null;
+      if (headBase != null) {
+        canvas.drawLine(shoulderCenter, headBase, paint..strokeWidth = 4);
+        canvas.drawCircle(shoulderCenter, 4, paint);
+        canvas.drawCircle(headBase, 4, paint);
+      }
+    }
+    // Make the pose model's wrist-to-palm/finger-root links stand out from the
+    // arm segments. These endpoints are approximate pose landmarks, not a
+    // hand-tracking model or articulated avatar fingers.
+    final handPaint = Paint()
+      ..color = const Color(0xff4bffb9)
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    for (final pair in handConnections) {
+      if (pair.$2 < points.length &&
+          valid(points[pair.$1]) &&
+          valid(points[pair.$2])) {
+        canvas.drawLine(
+          point(points[pair.$1]),
+          point(points[pair.$2]),
+          handPaint,
+        );
+      }
     }
     paint.color = Colors.white;
     for (final p in points) {
@@ -343,6 +366,16 @@ class LinuxSkeletonPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant LinuxSkeletonPainter oldDelegate) =>
       oldDelegate.points != points;
+  static const handConnections = [
+    (15, 17),
+    (15, 19),
+    (15, 21),
+    (17, 19),
+    (16, 18),
+    (16, 20),
+    (16, 22),
+    (18, 20),
+  ];
   static const connections = [
     (0, 1),
     (1, 2),
@@ -371,13 +404,5 @@ class LinuxSkeletonPainter extends CustomPainter {
     (28, 30),
     (30, 32),
     (28, 32),
-    (15, 17),
-    (15, 19),
-    (15, 21),
-    (17, 19),
-    (16, 18),
-    (16, 20),
-    (16, 22),
-    (18, 20),
   ];
 }
