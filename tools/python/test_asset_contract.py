@@ -1,10 +1,35 @@
 """Checks bind/skin invariants independently of the Android renderer."""
 import math
+import sys
 import struct
 import unittest
+from pathlib import Path
+from types import SimpleNamespace
 from generate_dev_rig import BONES, generate
 from inspect_glb import inspect
-from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'linux'))
+from mimic_tracker import hand_points
+
+
+class WorkerHandAssociation(unittest.TestCase):
+    def test_hand_landmarks_are_attached_to_nearest_pose_wrist(self):
+        def landmark(x, y, z=0, visibility=1):
+            return SimpleNamespace(x=x, y=y, z=z, visibility=visibility)
+        pose=[landmark(.5,.5) for _ in range(33)]
+        pose[15]=landmark(.25,.5)
+        pose[16]=landmark(.75,.5)
+        left=[landmark(.25+i*.001,.5) for i in range(21)]
+        right=[landmark(.75-i*.001,.5) for i in range(21)]
+        result=SimpleNamespace(
+            hand_landmarks=[right,left],
+            hand_world_landmarks=[[landmark(-i*.01,0,0) for i in range(21)],
+                                  [landmark(i*.01,0,0) for i in range(21)]],
+        )
+        hands=hand_points(result,pose)
+        self.assertEqual(len(hands['leftHandWorld']),21)
+        self.assertEqual(len(hands['rightHandWorld']),21)
+        self.assertGreater(hands['leftHandWorld'][1]['x'],0)
+        self.assertLess(hands['rightHandWorld'][1]['x'],0)
 
 
 class AssetContract(unittest.TestCase):
@@ -59,8 +84,9 @@ class AssetContract(unittest.TestCase):
         report=inspect(root/'app/assets/characters/development_humanoid.glb')
         self.assertEqual(report['skins'],1)
         self.assertEqual(report['animations'],0)
-        self.assertEqual(len(report['joints']),10)
+        self.assertEqual(len(report['joints']),42)
         self.assertEqual(report['joints'][3]['parent'],2)
+        self.assertIn('LeftIndex3',[joint['name'] for joint in report['joints']])
 
 
 if __name__=='__main__':

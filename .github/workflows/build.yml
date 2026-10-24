@@ -40,6 +40,8 @@ jobs:
           cache-dependency-path: tools/linux/requirements.txt
       - name: Install pinned tracker build dependencies
         run: python3 -m pip install -r tools/linux/requirements.txt
+      - name: Fetch checksum pinned hand tracking model
+        run: python3 tools/python/fetch_hand_model.py
       - name: Build single-file AppImage and bundled tracker
         run: bash tools/linux/build_appimage.sh
       - name: Test packaged tracker without a webcam
@@ -63,7 +65,7 @@ jobs:
           status=$?
           cat /tmp/mimic-replay.log
           if [ "$status" -ne 124 ]; then exit 1; fi
-          grep -q 'MIMIC_REPLAY_READY source=synthetic bones=10 mesh=true' /tmp/mimic-replay.log
+          grep -q 'MIMIC_REPLAY_READY source=synthetic bones=42 mesh=true' /tmp/mimic-replay.log
       - name: Record build and checksum
         run: |
           cp README.md dist/README.md

@@ -69,7 +69,7 @@ void main() {
         expect(tracker.replaying, isTrue);
         expect(tracker.jpeg, isNull);
         expect(tracker.solver.calibrated, isTrue);
-        expect(tracker.solver.validBones, 10);
+        expect(tracker.solver.validBones, 42);
         expect(
           tracker.solver.pose.localRotations['LeftForeArm']!.angleTo(
             Rotation.identity,

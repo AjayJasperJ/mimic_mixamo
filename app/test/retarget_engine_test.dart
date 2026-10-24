@@ -16,7 +16,7 @@ RetargetEngine calibrated({bool full = false, bool mirror = false}) {
   for (var i = 1; i <= 30; i++) {
     engine.receive(ReplayFixture.frame('test', i, i * 70000), i * 70000);
   }
-  expect(engine.calibrated, isTrue);
+  expect(engine.calibrated, isTrue, reason: engine.guidance);
   return engine;
 }
 
@@ -72,11 +72,32 @@ void main() {
   test('stable T-pose calibration maps the neutral frame to identity', () {
     final engine = calibrated();
     expect(engine.progress, 1);
-    expect(engine.pose.localRotations.length, 6);
+    expect(engine.pose.localRotations.length, 38);
     for (final q in engine.pose.localRotations.values) {
       expect(q.angleTo(Rotation.identity), lessThan(1e-6));
     }
     expect(engine.pose.rootYOffset, 0);
+  });
+  test('synthetic hand landmarks drive the skinned finger joints', () async {
+    final engine = calibrated();
+    final before = engine.pose.localRotations['LeftIndex2']!;
+    final open = ReplayFixture.frame('test', 31, 2170000);
+    engine.receive(open, 2170000);
+    final mesh = GlbMesh.parse(
+      await File('assets/characters/development_humanoid.glb').readAsBytes(),
+    );
+    final openVertices = mesh.posedVertices(engine.pose);
+    final curled = ReplayFixture.frame('test', 32, 2240000, fingerCurl: 1.1);
+    engine.receive(curled, 2240000);
+    final after = engine.pose.localRotations['LeftIndex2']!;
+    final curledVertices = mesh.posedVertices(engine.pose);
+    expect(after.angleTo(before), greaterThan(.05));
+    expect(
+      curledVertices.asMap().entries.any(
+        (entry) => (entry.value - openVertices[entry.key]).length > .001,
+      ),
+      isTrue,
+    );
   });
   test(
     'T-pose calibration tolerates bounded landmark jitter across the hold',
@@ -330,7 +351,7 @@ void main() {
     () async {
       final engine = calibrated(full: true);
       move(engine, crouch: .6, last: 60);
-      expect(engine.pose.localRotations.length, 10);
+      expect(engine.pose.localRotations.length, 42);
       expect(
         engine.pose.localRotations['LeftShin']!.angleTo(Rotation.identity),
         greaterThan(.6),
@@ -388,19 +409,27 @@ void main() {
         33,
         (_) => <String, Object?>{'x': 0.1, 'y': 0.2, 'z': 0.3},
       );
+      final hand = List<Object?>.generate(
+        21,
+        (i) => <String, Object?>{'x': i == 8 ? .1 : 0, 'y': 0, 'z': 0},
+      );
+      hand[0] = <String, Object?>{'x': 0, 'y': 0, 'z': 0};
       final frame = BodyFrame.parse({
-        'schemaVersion': 2,
+        'schemaVersion': 3,
         'sessionId': 'test',
         'sequence': 1,
         'capturedAtUs': 1,
         'worldPoints': points,
         'points': points,
+        'leftHandWorld': hand,
       });
       expect(frame.world.first!.visibility, isNull);
       final p = frame.solverPoint(11)!.position;
       expect(p.x, .1);
       expect(p.y, -.2);
       expect(p.z, -.3);
+      expect(frame.leftHandWorld.length, 21);
+      expect(frame.solverHandPoint(true, 8)!.position.x, .2);
     },
   );
 }

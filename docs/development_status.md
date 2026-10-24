@@ -10,6 +10,7 @@ Prior evidence: test-build-14 passed eight Flutter tests, frozen and packaged re
 - Combined Linux camera and actual skinned GLB view. Preview mirroring and avatar mirroring are separate. Changing camera/body mode/mirroring resets calibration.
 - Clearly labelled synthetic replay can calibrate and drive the model without opening a webcam. AppImage replay smoke tests the packaged UI/solver/mesh path.
 - M10 experimental: thigh/shin tracking, bounded bends and vertical-only approximate grounding without mesh scaling. No precise foot IK or room-scale travel.
+- Linux hand tracking extension: checksum-pinned MediaPipe Hand Landmarker, schema v3 hand landmarks, and palm plus 30 finger joints on the generated development rig. Synthetic replay exercises finger skinning. This is software-path coverage only; physical webcam hand visibility, latency and articulation remain NOT RUN. Imported character rigs remain unsupported.
 - Diagnostics and synthetic CPU profiling; no camera images or landmarks exported by diagnostic copy.
 
 Validation: Python asset contracts and shell/YAML checks available locally. Flutter/Android tooling and physical camera are unavailable in the agent environment. New unit/integration tests and AppImage replay/model/GUI checks must pass CI. Physical camera, subjective alignment, thermal, memory, motion delay and 10/30-minute acceptance remain NOT RUN.

@@ -55,4 +55,4 @@ For a complete AppImage, build Flutter Linux, install `tools/linux/requirements.
 
 The last command is explicitly synthetic replay, not a camera benchmark. Manual Rig control proof remains available for checking joint/skinning behavior independently.
 
-The original CC0 development humanoid has 10 joints, one skin and 156 triangles. It is not the owner's Mixamo character. This prototype is scoped to that small untextured rig; arbitrary GLB import, exact twist, hand/face animation, professional motion capture, precise room movement and production performance claims are not included.
+The original CC0 development humanoid has a single skin and 42 joints, including palm and finger articulation. It is not the owner's Mixamo character. Linux finger tracking uses a separately bundled hand model. This prototype is scoped to that small untextured rig; arbitrary GLB import, exact twist, face animation, professional motion capture, precise room movement and production performance claims are not included.

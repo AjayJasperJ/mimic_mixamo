@@ -216,7 +216,9 @@ class RetargetEngine {
     final x = _sumX.unit(), y = (_sumUp - x * _sumUp.dot(x)).unit();
     _reference = Rotation.basis(x, y, x.cross(y).unit());
     final raw = _globals(frame);
-    if (raw.length < DevelopmentRig.bones(fullBody).length) {
+    if (DevelopmentRig.bodyBones(
+      fullBody,
+    ).any((name) => !raw.containsKey(name))) {
       _samples = 0;
       progress = 0;
       _sumX = V3.zero;
@@ -263,7 +265,29 @@ class RetargetEngine {
         final parent = DevelopmentRig.parents[entry.key];
         if (parent != null && !result.containsKey(parent)) continue;
         final (a, b, rest) = entry.value;
-        final start = _point(frame, a), end = _point(frame, b);
+        final handSide = entry.key.startsWith('Left')
+            ? true
+            : entry.key.startsWith('Right')
+            ? false
+            : null;
+        final isHand =
+            handSide != null &&
+            (entry.key.contains('Hand') ||
+                entry.key.contains('Thumb') ||
+                entry.key.contains('Index') ||
+                entry.key.contains('Middle') ||
+                entry.key.contains('Ring') ||
+                entry.key.contains('Pinky'));
+        final start = isHand
+            ? frame
+                  .solverHandPoint(handSide, a, mirror: mirrorMovement)
+                  ?.position
+            : _point(frame, a);
+        final end = isHand
+            ? frame
+                  .solverHandPoint(handSide, b, mirror: mirrorMovement)
+                  ?.position
+            : _point(frame, b);
         if (start == null || end == null) continue;
         V3 direction;
         try {
