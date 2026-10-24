@@ -22,5 +22,7 @@ void main() {
     await tester.tap(find.text('Restore T-pose'));
     await tester.pump();
     expect(tester.widget<Slider>(find.byKey(const ValueKey('joint-1'))).value, 0);
+    await tester.pumpWidget(const SizedBox.shrink());
+    debugDefaultTargetPlatformOverride = null;
   });
 }
