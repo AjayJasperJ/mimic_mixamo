@@ -4,5 +4,5 @@ Do not claim synthetic drawing proves skinning or pose tracking.
 Keep frames and per-frame joint updates native on Android.
 Never commit camera footage, credentials or signing keys.
 Use Flutter 3.35.7. CI generates platform scaffolding using tools/bootstrap.sh;
-commit custom platform implementation before changing that generation policy.
+custom Android code lives in the committed local plugin app/packages/mimic_native/. Do not place custom code in uncommitted generated runners.
 Run dart format, flutter analyze and flutter test for Dart changes.

@@ -1,13 +1,15 @@
 # Development status — 2026-10-24
 
-Current task: M00/M01 foundation and Linux CI preview.
+Current task: M02/M03 development rig and native skinning proof implementation.
 
-Implemented: Flutter session UI, synthetic skeleton with manual bend and animation, pause/reset, background pause, widget regression check, Linux and Android build workflow.
+M00: local Java 17 and git present. Flutter/Dart, Android SDK, adb, GPU and physical device unavailable locally. CI provides Flutter 3.35.7 and Android build tools.
+M01: previous commit 9449339 passed Linux analysis/tests/build/smoke launch and Android debug APK build. Installation on target phone remains NOT RUN.
+M02: original development humanoid generated reproducibly with 10 joints, one skin, inverse bind matrices, 156 triangles and no clips. Asset manifest and rig conventions recorded. This is a placeholder, not an owner-approved Mixamo rig.
+M03: Android Filament 1.56.0 platform view and direct local shoulder/elbow control implemented; skin matrices updated explicitly. T-pose restore, procedural demo, per-view channel and detach/background handling added. Linux hierarchy preview has independent joint controls. Compilation and device acceptance for the new code pending CI/device evidence.
 
-Environment: git and Java available; Flutter/Dart, Android SDK and physical device unavailable locally. Local Flutter formatting/analysis/tests/builds NOT RUN. CI is the execution environment and must pass before claiming build success.
+Local validation: four Python asset contract tests PASS (weights/indices, bind hierarchy, geometry bounds, deterministic skin). Bootstrap Bash syntax PASS. Flutter checks NOT RUN locally; CI runs analysis, widget/math tests and builds.
 
-PENDING: verify first CI result and download artifact. M01 installation on target phone is NOT RUN.
-BLOCKED: M02/M03 need an approved rigged GLB; actual renderer and direct skinned bone proof not implemented. Synthetic painter is not that proof.
-M04–M14: TODO. Camera tracking, calibration, retargeting, full body and device benchmarks are unimplemented.
+M03 exit gate remains IN_PROGRESS, not VERIFIED: actual skinning, mesh appearance and 10 load/unload cycles need a physical Android test. Do not begin tracked pose mapping before resolving rendering failures.
+M04–M14: TODO. Camera, MediaPipe, calibration, live retargeting, full-body motion and measured performance are not implemented.
 
-Next: verify CI, commit platform runners with initial native integration, inspect approved GLB and prove direct elbow control. Target Android phone details and physical testing remain required.
+Next exact action: inspect CI results, fix compile/test failures; install APK, open Rig control proof and execute docs/device_test_report.md. Replace development asset with an approved rig only after inspection/mapping. Physical target phone details still needed.

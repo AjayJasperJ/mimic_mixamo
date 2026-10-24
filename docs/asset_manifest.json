@@ -1,0 +1,226 @@
+{
+  "id": "mimic-block-humanoid-v1",
+  "kind": "original development placeholder; not Mixamo",
+  "source": "tools/python/generate_dev_rig.py",
+  "license": "CC0-1.0",
+  "sha256": "8c6facd9141598ecd99e27d80ebc87554e7dd7846640798197aaa558c7c2ae5d",
+  "triangles": 156,
+  "units": "meters",
+  "up": "+Y",
+  "forward": "+Z",
+  "restPose": "T-pose",
+  "skinCount": 1,
+  "animationCount": 0,
+  "joints": [
+    {
+      "index": 0,
+      "name": "Hips",
+      "parent": null,
+      "translation": [
+        0,
+        0.9,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Chest",
+      "parent": 0,
+      "translation": [
+        0,
+        0.35,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 2,
+      "name": "LeftUpperArm",
+      "parent": 1,
+      "translation": [
+        0.2,
+        0.2,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 3,
+      "name": "LeftForeArm",
+      "parent": 2,
+      "translation": [
+        0.4,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 4,
+      "name": "RightUpperArm",
+      "parent": 1,
+      "translation": [
+        -0.2,
+        0.2,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 5,
+      "name": "RightForeArm",
+      "parent": 4,
+      "translation": [
+        -0.4,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 6,
+      "name": "LeftThigh",
+      "parent": 0,
+      "translation": [
+        0.12,
+        -0.05,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 7,
+      "name": "LeftShin",
+      "parent": 6,
+      "translation": [
+        0,
+        -0.42,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 8,
+      "name": "RightThigh",
+      "parent": 0,
+      "translation": [
+        -0.12,
+        -0.05,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 9,
+      "name": "RightShin",
+      "parent": 8,
+      "translation": [
+        0,
+        -0.42,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  ]
+}

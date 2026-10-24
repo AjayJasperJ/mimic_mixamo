@@ -7,3 +7,6 @@ app/linux/flutter/ephemeral/
 *.jks
 *.keystore
 key.properties
+
+__pycache__/
+app/assets/characters/development_humanoid.glb

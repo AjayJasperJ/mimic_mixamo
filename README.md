@@ -25,7 +25,13 @@ flutter run -d linux
 
 Linux build prerequisites: clang, cmake, ninja-build, pkg-config, libgtk-3-dev, libstdc++-12-dev. Android uses JDK 17 and the Android SDK. The bootstrap script generates missing platform scaffolding from the pinned SDK; custom native source will be committed before native integration.
 
-## Current preview
+## Rig control milestone (0.2)
+
+Open **Rig control proof** from the preview. Android loads an original skinned block humanoid through Filament and exposes four independent shoulder/elbow sliders, a native bone demo and T-pose restore. Linux shows the same hierarchy as a 2D joint preview. Camera tracking is still pending. Actual Android skinning and lifecycle acceptance require a physical device; see [device checklist](docs/device_test_report.md).
+
+The placeholder GLB is generated before every build using Python 3 (standard library only). It has 10 joints and no clips, demonstrating why pre-recorded clips are not required for live bone control. See [asset manifest](docs/asset_manifest.json). It is not a Mixamo character.
+
+## Initial synthetic preview
 
 Manual elbow slider, animated synthetic skeleton, start/pause/reset controls and lifecycle pause. This validates UI wiring only. Live camera tracking, Mixamo GLB skinning, calibration, smoothing and native session channels are pending. Supply an approved rigged GLB (skin/joints/weights required; animation clips optional) for the next rendering gate.
 

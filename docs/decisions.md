@@ -5,3 +5,7 @@
 - CI bootstraps absent platform runners from the pinned Flutter template. Custom native runners must be committed when native work begins. App code and pubspec already exist, so flutter create does not replace them.
 - Linux packaging includes the whole Flutter bundle, not just the executable. Ubuntu 22.04 x86_64 is the initial CI baseline; other distributions require testing.
 - No approved character or tracking model is included. No third-party model distribution rights are assumed.
+
+- Rendering work lives in a committed local Flutter Android plugin, rather than generated app runners. The pinned runner template remains reproducible and does not overwrite custom native implementation.
+- A generated original CC0 block humanoid unblocks development while waiting for the owner asset. Its simple identity bind axes are not assumed to hold for Mixamo.
+- Filament 1.56.0 Android ModelViewer/FilamentAsset/Animator APIs checked against exact tagged source. Direct TransformManager writes precede updateBoneMatrices; clip playback is disabled.

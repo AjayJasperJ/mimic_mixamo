@@ -1,7 +1,16 @@
 import 'dart:math' as math;
+import 'features/rig/rig_lab.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
-void main() => runApp(const MimicApp());
+void main() {
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks(['Filament 1.56.0'],
+      await rootBundle.loadString('assets/notices/FILAMENT_APACHE_2_0.txt'));
+  });
+  runApp(const MimicApp());
+}
 
 class MimicApp extends StatelessWidget {
   const MimicApp({super.key});
@@ -66,6 +75,8 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
             builder: (context, child) => CustomPaint(painter: PosePainter(
               bend: _playing ? _clock.value : _bend)))),
         ]))),
+        const SizedBox(height: 16),
+        FilledButton.icon(onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const RigLab())), icon: const Icon(Icons.view_in_ar), label: const Text('Open rig control proof')),
         const SizedBox(height: 16),
         Wrap(spacing: 12, runSpacing: 12, children: [
           FilledButton.icon(onPressed: _toggle, icon: Icon(_playing ? Icons.pause : Icons.play_arrow), label: Text(_playing ? 'Pause simulation' : 'Start simulation')),
