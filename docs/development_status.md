@@ -10,7 +10,7 @@ Prior Android baseline: 0.3.0 camera and GLB recovery build passed CI run 400701
 - Linux desktop loads the actual bundled skinned GLB, applies joint-local transforms and inverse bind matrices, and displays triangles with drag-to-rotate. This is scoped to the development asset and is not arbitrary GLB import support.
 - CI builds Mimic-x86_64.AppImage, performs real blank-image model inference in the frozen worker and packaged AppImage, and smoke-launches the packaged GUI. Release assets now use the AppImage instead of the old tar archive.
 
-Validation: no physical webcam or Flutter SDK in local agent environment. Standard-library worker device listing executed and found no webcams. Shell/YAML syntax checks and Python asset contracts run locally. New Dart, frozen inference and AppImage checks must pass CI before claiming build success. Blank-image inference is not webcam/accuracy acceptance.
+Validation: no physical webcam or Flutter SDK in local agent environment. Standard-library worker device listing executed and found no webcams. Shell/YAML syntax checks and Python asset contracts run locally. CI run 40106210791 passed all eight Flutter tests and Linux compilation. Run 40106564693 passed frozen-worker real inference on a blank fixture, then failed while linuxdeploy scanned private MediaPipe libraries. The packaging order is being corrected and the final AppImage tests remain pending. Blank-image inference is not webcam/accuracy acceptance.
 
 M03: Linux GLB implementation added; Android visual gate remains pending phone retest.
 M04/M05: Android implemented/compiled baseline; Linux implementation pending CI and physical webcam acceptance.

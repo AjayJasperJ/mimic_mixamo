@@ -14,7 +14,6 @@ python3 -m PyInstaller --noconfirm --clean --onedir --name mimic-tracker \
 MIMIC_APPDIR="$MIMIC_STAGE/AppDir"
 mkdir -p "$MIMIC_APPDIR/usr/bin" "$MIMIC_APPDIR/usr/lib" "$MIMIC_APPDIR/usr/share/doc/mimic"
 cp -a app/build/linux/x64/release/bundle/. "$MIMIC_APPDIR/usr/bin/"
-cp -a "$MIMIC_STAGE/frozen/mimic-tracker" "$MIMIC_APPDIR/usr/lib/"
 cp README.md "$MIMIC_APPDIR/usr/share/doc/mimic/"
 python3 -m pip freeze > "$MIMIC_APPDIR/usr/share/doc/mimic/python-environment.txt"
 python3 tools/linux/collect_licenses.py "$MIMIC_APPDIR/usr/share/doc/mimic/python-licenses"
@@ -25,6 +24,8 @@ chmod +x "$MIMIC_STAGE/tooling/linuxdeploy.AppImage"
 NO_STRIP=1 APPIMAGE_EXTRACT_AND_RUN=1 "$MIMIC_STAGE/tooling/linuxdeploy.AppImage" \
   --appdir "$MIMIC_APPDIR" --executable "$MIMIC_APPDIR/usr/bin/mimic_mixamo" \
   --desktop-file tools/linux/mimic.desktop --icon-file tools/linux/mimic.svg
+# Preserve PyInstaller's private dependency names and RPATHs: linuxdeploy must not rewrite this tree.
+cp -a "$MIMIC_STAGE/frozen/mimic-tracker" "$MIMIC_APPDIR/usr/lib/"
 # The custom entrypoint starts either Flutter or the bundled tracker diagnostics.
 rm -f "$MIMIC_APPDIR/AppRun"
 cp tools/linux/AppRun "$MIMIC_APPDIR/AppRun"
