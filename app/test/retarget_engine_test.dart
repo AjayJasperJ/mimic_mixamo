@@ -113,6 +113,53 @@ void main() {
       expect(engine.progress, 1);
     },
   );
+  test(
+    'visible T-pose calibrates despite depth-tilted world arm estimates',
+    () {
+      final engine = RetargetEngine()
+        ..attach('test')
+        ..beginCalibration();
+      for (var i = 1; i <= 30; i++) {
+        final frame = ReplayFixture.frame('test', i, i * 70000);
+        final world = frame.world.toList();
+        for (final left in [true, false]) {
+          final shoulderIndex = left ? 11 : 12;
+          final elbowIndex = left ? 13 : 14;
+          final wristIndex = left ? 15 : 16;
+          final shoulder = world[shoulderIndex]!.position;
+          final direction = V3(left ? .28 : -.28, 0, .28);
+          world[elbowIndex] = BodyPoint(
+            shoulder + direction,
+            visibility: .52,
+            presence: .52,
+          );
+          world[wristIndex] = BodyPoint(
+            shoulder + direction * 1.9,
+            visibility: .52,
+            presence: .52,
+          );
+        }
+        final confidentWorld = world
+            .map(
+              (point) => point == null
+                  ? null
+                  : BodyPoint(point.position, visibility: .52, presence: .52),
+            )
+            .toList();
+        engine.receive(
+          BodyFrame(
+            sessionId: 'test',
+            sequence: i,
+            capturedAtUs: i * 70000,
+            world: confidentWorld,
+            image: frame.image,
+          ),
+          i * 70000,
+        );
+      }
+      expect(engine.calibrated, isTrue, reason: engine.guidance);
+    },
+  );
   test('low-confidence calibration does not silently succeed', () {
     final engine = RetargetEngine()
       ..attach('test')
@@ -147,7 +194,7 @@ void main() {
       );
     }
     expect(engine.calibrated, isFalse);
-    expect(engine.guidance, contains('Straighten'));
+    expect(engine.guidance, contains('Extend both arms'));
   });
   test(
     'old session, duplicate sequence and nonmonotonic timestamps are rejected',

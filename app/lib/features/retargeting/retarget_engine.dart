@@ -5,8 +5,6 @@ import 'pose_math.dart';
 import 'rig_definition.dart';
 
 class RetargetEngine {
-  static const _calibrationWorldTolerance = .08;
-  static const _calibrationImageTolerance = .045;
   String? sessionId;
   bool fullBody = false, mirrorMovement = false;
   double smoothing = .35;
@@ -25,7 +23,6 @@ class RetargetEngine {
       _rateStart = 0,
       _rateFrames = 0;
   int _calibrationStart = 0, _samples = 0;
-  BodyFrame? _previousCalibration;
   Rotation _reference = Rotation.identity;
   V3 _sumX = V3.zero, _sumUp = V3.zero;
   final Map<String, Rotation> _correction = {}, _lastGood = {}, _smoothed = {};
@@ -68,7 +65,6 @@ class RetargetEngine {
     progress = 0;
     _samples = 0;
     _calibrationStart = 0;
-    _previousCalibration = null;
     _sumX = V3.zero;
     _sumUp = V3.zero;
     _correction.clear();
@@ -149,22 +145,31 @@ class RetargetEngine {
     ];
     if (required.any((i) => _point(frame, i) == null))
       return 'Keep the required joints visible and confidently tracked';
-    if (frame.image.length != 33 ||
-        frame.image[11] == null ||
+    if (frame.image.length != 33)
+      return 'Keep the required joints clearly visible in the camera image';
+    if (required.any((i) => frame.image[i]?.usable != true))
+      return 'Keep the required joints clearly visible in the camera image';
+    if (frame.image[11] == null ||
         frame.image[12] == null ||
         (frame.image[11]!.position.x - frame.image[12]!.position.x).abs() < .10)
       return 'Move closer: shoulders are too small in the image';
     final basis = _basis(frame);
     if (basis == null) return 'Face the camera with shoulders and hips visible';
-    final side = basis.rotate(V3.right);
     for (final left in [true, false]) {
-      final s = _point(frame, left ? 11 : 12)!,
-          e = _point(frame, left ? 13 : 14)!,
-          w = _point(frame, left ? 15 : 16)!;
+      // Calibration acceptance follows the same 2D landmarks shown in the
+      // camera overlay. World-space arm direction can lean toward/away from
+      // the camera even when the user is visibly holding a T-pose.
+      final shoulder = frame.image[left ? 11 : 12]!.position,
+          elbow = frame.image[left ? 13 : 14]!.position,
+          wrist = frame.image[left ? 15 : 16]!.position;
       try {
-        final upper = (e - s).unit(), fore = (w - e).unit();
-        if (upper.dot(fore) < .92 || upper.dot(side * (left ? 1 : -1)) < .92)
-          return 'Straighten both arms horizontally into the T-pose';
+        final upper = (elbow - shoulder).unit(),
+            forearm = (wrist - elbow).unit(),
+            arm = wrist - shoulder;
+        if (upper.dot(forearm) < .70 ||
+            arm.x.abs() < .08 ||
+            arm.y.abs() > arm.x.abs() * .70)
+          return 'Extend both arms sideways; keep elbows straight and wrists visible';
       } on FormatException {
         return 'Arm landmarks overlap. Reframe and try again';
       }
@@ -175,26 +180,11 @@ class RetargetEngine {
             k = _point(frame, left ? 25 : 26)!,
             a = _point(frame, left ? 27 : 28)!;
         try {
-          if ((k - h).unit().dot((a - k).unit()) < .95)
+          if ((k - h).unit().dot((a - k).unit()) < .85)
             return 'Stand upright with straight legs for calibration';
         } on FormatException {
           return 'Show both knees and ankles';
         }
-      }
-    }
-    final previous = _previousCalibration;
-    if (previous != null) {
-      for (final i in required) {
-        final a = _point(previous, i), b = _point(frame, i);
-        if (a == null ||
-            b == null ||
-            (a - b).length > _calibrationWorldTolerance)
-          return 'Hold still; calibration restarted';
-        final ia = previous.image[i]?.position, ib = frame.image[i]?.position;
-        if (ia == null ||
-            ib == null ||
-            V3(ia.x - ib.x, ia.y - ib.y, 0).length > _calibrationImageTolerance)
-          return 'Hold still in the camera image; calibration restarted';
       }
     }
     return null;
@@ -208,17 +198,12 @@ class RetargetEngine {
       _calibrationStart = 0;
       _sumX = V3.zero;
       _sumUp = V3.zero;
-      _previousCalibration = null;
       guidance = issue;
       return;
     }
     final basis = _basis(frame)!;
     if (_samples == 0) _calibrationStart = now;
     _samples++;
-    // Compare the whole calibration hold against its first accepted sample.
-    // Comparing adjacent frames mistakes normal landmark jitter for a pose
-    // change and repeatedly resets progress before the 1.5 second window ends.
-    _previousCalibration ??= frame;
     _sumX = _sumX + basis.rotate(V3.right);
     _sumUp = _sumUp + basis.rotate(V3.up);
     progress = math
@@ -236,7 +221,6 @@ class RetargetEngine {
       progress = 0;
       _sumX = V3.zero;
       _sumUp = V3.zero;
-      _previousCalibration = null;
       guidance = 'Required joints were lost; hold the T-pose again';
       return;
     }
