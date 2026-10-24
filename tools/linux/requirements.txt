@@ -27,3 +27,4 @@ six==1.16.0
 altgraph==0.17.4
 pyinstaller-hooks-contrib==2024.8
 setuptools==75.1.0
+opt-einsum==3.4.0

@@ -8,7 +8,7 @@ python3 -m PyInstaller --noconfirm --clean --onedir --name mimic-tracker \
   --distpath "$MIMIC_STAGE/frozen" --workpath "$MIMIC_STAGE/pyinstaller" --specpath "$MIMIC_STAGE" \
   --collect-all mediapipe --collect-all cv2 \
   --exclude-module jax --exclude-module jaxlib --exclude-module tensorflow --exclude-module torch \
-  --add-data 'app/packages/mimic_native/android/src/main/assets/pose_landmarker_lite.task:.' \
+  --add-data "$PWD/app/packages/mimic_native/android/src/main/assets/pose_landmarker_lite.task:." \
   tools/linux/mimic_tracker.py
 "$MIMIC_STAGE/frozen/mimic-tracker/mimic-tracker" --self-test
 MIMIC_APPDIR="$MIMIC_STAGE/AppDir"
