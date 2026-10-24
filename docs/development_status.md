@@ -13,7 +13,7 @@ Prior evidence: test-build-14 passed eight Flutter tests, frozen and packaged re
 - Linux hand tracking extension: checksum-pinned MediaPipe Hand Landmarker, schema v3 hand landmarks, and palm plus 30 finger joints on the generated development rig. Synthetic replay exercises finger skinning. This is software-path coverage only; physical webcam hand visibility, latency and articulation remain NOT RUN. Imported character rigs remain unsupported.
 - Diagnostics and synthetic CPU profiling; no camera images or landmarks exported by diagnostic copy.
 
-Validation: Python asset contracts and shell/YAML checks available locally. Flutter/Android tooling and physical camera are unavailable in the agent environment. New unit/integration tests and AppImage replay/model/GUI checks must pass CI. Physical camera, subjective alignment, thermal, memory, motion delay and 10/30-minute acceptance remain NOT RUN.
+Validation for this change: Python asset/hand-association tests 5/5 passed; `dart format`, `flutter analyze` and `flutter test` passed (30 tests). Python syntax, shell syntax and `git diff --check` passed. Frozen worker/AppImage model self-test and GUI smoke were NOT RUN locally because Python 3.10 and MediaPipe are not installed; GitHub CI is pending. Physical camera, subjective alignment, thermal, memory, motion delay and 10/30-minute acceptance remain NOT RUN.
 
 M09/M10 exit gates are not VERIFIED merely because the solver is implemented or synthetic tests pass. User explicitly authorized continued implementation while physical checks remain open. General foot-contact IK, production rig approval, broader Linux compatibility and physical performance acceptance remain future work. Android port/re-enable waits for Linux acceptance and owner direction.
 
