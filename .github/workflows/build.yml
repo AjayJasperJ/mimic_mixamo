@@ -69,6 +69,8 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   android:
+    # Paused by owner: keep implementation, allocate no Android runner.
+    if: ${{ false }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -116,7 +118,7 @@ jobs:
 
   release:
     name: Publish latest test release
-    needs: [linux, android]
+    needs: [linux]
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-22.04
     timeout-minutes: 10
@@ -128,22 +130,15 @@ jobs:
         with:
           name: mimic-linux-x86_64-${{ github.sha }}
           path: downloads/linux
-      - uses: actions/download-artifact@v4
-        with:
-          name: mimic-android-debug-${{ github.sha }}
-          path: downloads/android
       - name: Verify and prepare release assets
         run: |
           (cd downloads/linux && sha256sum -c SHA256SUMS)
-          (cd downloads/android && sha256sum -c SHA256SUMS)
           mkdir release-assets
           cp downloads/linux/Mimic-x86_64.AppImage release-assets/
-          cp downloads/android/mimic-debug.apk release-assets/
           cp downloads/linux/BUILD_INFO.txt release-assets/LINUX_BUILD_INFO.txt
-          cp downloads/android/BUILD_INFO.txt release-assets/ANDROID_BUILD_INFO.txt
           cp downloads/linux/README.md release-assets/README.md
           cd release-assets
-          sha256sum Mimic-x86_64.AppImage mimic-debug.apk > SHA256SUMS
+          sha256sum Mimic-x86_64.AppImage > SHA256SUMS
       - name: Publish before removing previous test releases
         env:
           GH_TOKEN: ${{ github.token }}
@@ -161,7 +156,7 @@ jobs:
           cat > notes.md <<EOF
           <!-- mimic-managed-test-release -->
           Automated test build from commit $GITHUB_SHA.
-          Linux x86_64 AppImage with bundled webcam tracker and skinned GLB preview, plus Android debug APK. Camera-to-avatar retargeting and physical-device acceptance remain pending.
+          Linux x86_64 AppImage with bundled webcam tracker and skinned GLB preview, Linux-only release; Android runner is paused. Camera-to-avatar retargeting and physical-device acceptance remain pending.
           Linux: chmod +x Mimic-x86_64.AppImage, then run ./Mimic-x86_64.AppImage. No Python installation or sidecar files required.
           Only the newest successful automatic test release is retained.
           EOF
@@ -177,7 +172,7 @@ jobs:
           fi
           # Confirm publication and essential assets before any deletion.
           gh release view "$tag" --json isDraft,assets > published.json
-          jq -e '.isDraft == false and ([.assets[].name] | index("Mimic-x86_64.AppImage") != null and index("mimic-debug.apk") != null and index("SHA256SUMS") != null)' published.json
+          jq -e '.isDraft == false and ([.assets[].name] | index("Mimic-x86_64.AppImage") != null and index("SHA256SUMS") != null)' published.json
           gh api --paginate "repos/$GH_REPO/releases?per_page=100" \
             --jq '.[] | select(.prerelease == true) | select((.body // "") | contains("<!-- mimic-managed-test-release -->")) | .tag_name' > candidates.txt
           while IFS= read -r old_tag; do
