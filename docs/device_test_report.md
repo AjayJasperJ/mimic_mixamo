@@ -1,5 +1,7 @@
 # Device test report
 
+CI baseline: run 40067758051 (commit 05bfbd03) passed Linux analysis/tests/build/launch and Android APK compilation. This is build evidence only.
+
 Physical Android phone: not available in the agent environment. These gates are NOT RUN:
 
 - Install APK and open Rig control proof; confirm actual GLB is visible.

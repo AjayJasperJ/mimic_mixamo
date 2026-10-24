@@ -30,7 +30,6 @@ jobs:
           dart format lib test
           flutter analyze
           flutter test
-          cat pubspec.lock
       - name: Build Linux
         working-directory: app
         run: flutter build linux --release
@@ -64,6 +63,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
+          cache-dependency-path: |
+            app/packages/mimic_native/android/build.gradle
+            app/pubspec.lock
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.35.7'

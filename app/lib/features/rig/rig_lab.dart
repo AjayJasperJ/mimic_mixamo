@@ -100,7 +100,7 @@ class RigDiagram extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(Offset.zero & size, Paint()..color = const Color(0xff171f2b));
     final scale = size.height / 2.1;
-    Offset project(Offset p) => Offset(size.width/2 - p.dx*scale, size.height - 20 - p.dy*scale);
+    Offset project(Offset p) => Offset(size.width/2 + p.dx*scale, size.height - 20 - p.dy*scale);
     final paint = Paint()..color = const Color(0xff69dfbf)..strokeWidth = 12..strokeCap = StrokeCap.round;
     void line(Offset a, Offset b) => canvas.drawLine(project(a), project(b), paint);
     line(const Offset(0,.88), const Offset(0,1.45));

@@ -9,3 +9,5 @@
 - Rendering work lives in a committed local Flutter Android plugin, rather than generated app runners. The pinned runner template remains reproducible and does not overwrite custom native implementation.
 - A generated original CC0 block humanoid unblocks development while waiting for the owner asset. Its simple identity bind axes are not assumed to hold for Mixamo.
 - Filament 1.56.0 Android ModelViewer/FilamentAsset/Animator APIs checked against exact tagged source. Direct TransformManager writes precede updateBoneMatrices; clip playback is disabled.
+
+- app/pubspec.lock recovered directly from the successful CI dependency resolution and committed with all hosted package checksums; no hand-invented dependency hashes.

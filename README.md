@@ -8,7 +8,7 @@ Download the newest tagged build from [Releases](https://github.com/AjayJasperJ/
 
 Linux: unzip the artifact, verify `sha256sum -c SHA256SUMS`, extract the `.tar.gz`, then run `./mimic_mixamo` inside the extracted bundle. Keep `lib/` and `data/` alongside the executable. Baseline Ubuntu 22.04+ x86_64 with GTK3 runtime: `sudo apt-get install libgtk-3-0 libstdc++6`. Other distributions have not been validated.
 
-Android: install the debug APK for UI testing only. No camera or 3D rig support is included in this milestone. This is not a distribution-signed release.
+Android: install the debug APK and open Rig control proof to test the Filament development humanoid. Camera tracking is not implemented. Visual skinning and lifecycle verification on a physical phone are pending. This is not a distribution-signed release.
 
 ## Develop
 
