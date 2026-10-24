@@ -10,3 +10,5 @@ Run dart format, flutter analyze and flutter test for Dart changes.
 The app Gradle config app/android/app/build.gradle.kts is committed to keep bundled MediaPipe task files uncompressed. Bootstrap fills missing runner files without replacing this config.
 
 Linux 0.4.0 is explicitly in scope: bundled webcam tracking helper under tools/linux/ and AppImage packaging. Do not require end-user Python installation or a sidecar directory. Linux frames may cross Dart via the bounded local worker protocol; Android frames remain native. Run AppImage's frozen/packaged self-test and GUI smoke check before publishing it. No physical webcam results may be inferred from synthetic CI tests.
+
+Owner's 0.5.0 direction: continue implementation on Linux; Android runner is paused with a literal false condition. Do not re-enable Android based on CI alone. User authorizes independent implementation while physical gates remain open, but do not mark those gates verified. Keep replay prominently synthetic and use the actual calibrated solver/mesh path. Follow docs/retargeting.md for frame clocks, confidence/loss policy and coordinate conventions.

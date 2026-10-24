@@ -1,11 +1,15 @@
 import 'dart:math' as math;
 import 'dart:ui';
+import '../retargeting/pose_math.dart';
 
 /// Development rig convention: +Y up, +X anatomical left, angles about +Z.
 class RigPose {
   const RigPose({this.leftShoulder = 0, this.leftElbow = 0,
-    this.rightShoulder = 0, this.rightElbow = 0});
+    this.rightShoulder = 0, this.rightElbow = 0,
+    this.localRotations = const {}, this.rootYOffset = 0});
   final double leftShoulder, leftElbow, rightShoulder, rightElbow;
+  final Map<String,Rotation> localRotations;
+  final double rootYOffset;
   List<double> get angles => [leftShoulder, leftElbow, rightShoulder, rightElbow];
   RigPose withAngle(int index, double value) {
     if (!value.isFinite) throw ArgumentError.value(value, 'value');

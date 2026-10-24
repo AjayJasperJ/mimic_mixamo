@@ -27,3 +27,9 @@ LinuxCameraView overlays landmarks in the same fit-center image rectangle and mi
 GlbMesh reads the bundled development GLB's embedded accessors, nodes, weights and inverse binds; joint world matrices are multiplied by inverse bind matrices before vertices are projected. DesktopGlbView draws depth-sorted triangles and supports a simple orbit gesture. Only the original tiny untextured single-mesh/single-skin asset is in scope.
 
 AppRun launches Flutter or bundled tracker diagnostics from one AppImage. linuxdeploy bundles GTK dependencies; PyInstaller bundles the Python worker and package libraries. CI tests the actual image with real model inference on a synthetic blank frame, then a headless GUI launch. A physical webcam run remains separate acceptance evidence.
+
+## Linux live retargeting 0.5.0
+
+BodyFrame separates normalized image points from estimated metric world points. RetargetEngine owns calibration/configuration, time-based filtering, last-good joint buffers and loss state. LinuxTracker owns session lifecycle and invokes the solver with receipt-time monotonic microseconds; source times are used for ordering only. A pose timer continues safe fallback when input stalls. Replay uses the same typed solver contract and actual mesh with explicit synthetic-source labels.
+
+RigPose carries normalized parent-local rotation values and an optional vertical root offset; GlbMesh composes these with saved bind-local translations/scales before skinning. Camera and skinned avatar share the Linux screen. The disabled Android job receives no runner, and the release job depends only on Linux.

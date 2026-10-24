@@ -5,7 +5,8 @@ import 'package:flutter/services.dart';
 import 'linux_camera_view.dart';
 
 class CameraScreen extends StatefulWidget {
-  const CameraScreen({super.key});
+  const CameraScreen({super.key,this.autoReplay=false});
+  final bool autoReplay;
   @override
   State<CameraScreen> createState() => _CameraScreenState();
 }
@@ -59,8 +60,8 @@ class _CameraScreenState extends State<CameraScreen> {
     body: ListView(padding: const EdgeInsets.all(20), children: [
       const Text('Allow camera access, then stand where your body is visible. Frames stay on this device and are not recorded.'),
       const SizedBox(height: 12),
-      SizedBox(height: _linux ? 520 : 420, child: _linux
-        ? const LinuxCameraView()
+      SizedBox(height: _linux ? 650 : 420, child: _linux
+        ? LinuxCameraView(autoReplay:widget.autoReplay)
         : _android
         ? AndroidView(viewType: 'mimic/camera', onPlatformViewCreated: _created)
         : const Center(child: Text('Camera tracking is currently supported on Android and Linux.'))),
@@ -75,7 +76,7 @@ class _CameraScreenState extends State<CameraScreen> {
         TextButton(onPressed: _android ? () => _command('openSettings') : null, child: const Text('Camera permission settings')),
       ]),
       const SizedBox(height: 16),
-      const Text('This screen verifies camera acquisition and the body skeleton overlay. It does not yet drive the 3D character. Use Rig control proof to test the GLB independently.'),
+      Text(_linux ? 'Linux: hold a stable T-pose to calibrate, then move to drive the avatar. Full-body grounding is experimental; root X/Z stays anchored.' : 'Android retargeting is paused while Linux is validated. The existing Android screen shows camera landmarks only.'),
     ]),
   );
 }

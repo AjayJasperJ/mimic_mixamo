@@ -1,19 +1,19 @@
-# Development status — 0.4.0 / 24 October 2026
+# Development status — Linux 0.5.0 / 24 October 2026
 
-Current tasks: Linux webcam tracking and single-file AppImage distribution, explicitly requested by owner.
+Owner instruction: continue the proposed development steps on Linux and disable Android runners until Linux is validated. Android job is explicitly skipped; release depends on Linux only and publishes no APK. Android implementation remains in source, not automatically re-enabled by a passing Linux job.
 
-Prior Android baseline: 0.3.0 camera and GLB recovery build passed CI run 40070114705, including both builds, native contract tests and actual APK asset/permission checks. Physical Android GLB visual acceptance remains pending after the reported failure.
+Prior evidence: test-build-14 passed eight Flutter tests, frozen and packaged real-model inference on a blank fixture, Linux AppImage GUI launch, Android compile and release publication. Those checks did not establish physical webcam behavior.
 
-0.4.0 implementation:
-- Linux V4L2 webcam discovery, local MediaPipe/OpenCV inference and matching preview/skeleton. Worker is packaged with Python and its dependencies; no runtime pip/model download.
-- One-frame credit protocol over local stdio; UI epoch invalidation on restart. Stop/back/background sends stop and terminates a worker that does not exit, so no camera process should remain.
-- Linux desktop loads the actual bundled skinned GLB, applies joint-local transforms and inverse bind matrices, and displays triangles with drag-to-rotate. This is scoped to the development asset and is not arbitrary GLB import support.
-- CI builds Mimic-x86_64.AppImage, performs real blank-image model inference in the frozen worker and packaged AppImage, and smoke-launches the packaged GUI. Release assets now use the AppImage instead of the old tar archive.
+0.5.0 implementation:
+- M06: typed world/image frame protocol, monotonic ordering/session rejection, one coordinate adapter, central mapping for the original rig.
+- M07/M08: stable T-pose calibration, independent shoulder/elbow rotations, chest/hip orientation, normalized parent-local quaternions, shortest-path time-based smoothing, confidence hold/fallback and filtered recovery.
+- Combined Linux camera and actual skinned GLB view. Preview mirroring and avatar mirroring are separate. Changing camera/body mode/mirroring resets calibration.
+- Clearly labelled synthetic replay can calibrate and drive the model without opening a webcam. AppImage replay smoke tests the packaged UI/solver/mesh path.
+- M10 experimental: thigh/shin tracking, bounded bends and vertical-only approximate grounding without mesh scaling. No precise foot IK or room-scale travel.
+- Diagnostics and synthetic CPU profiling; no camera images or landmarks exported by diagnostic copy.
 
-Validation: no physical webcam or Flutter SDK in local agent environment. Standard-library worker device listing executed and found no webcams. Shell/YAML syntax checks and Python asset contracts run locally. CI run 40106210791 passed all eight Flutter tests and Linux compilation. Run 40106564693 passed frozen-worker real inference on a blank fixture, then failed while linuxdeploy scanned private MediaPipe libraries. The packaging order is being corrected and the final AppImage tests remain pending. Blank-image inference is not webcam/accuracy acceptance.
+Validation: Python asset contracts and shell/YAML checks available locally. Flutter/Android tooling and physical camera are unavailable in the agent environment. New unit/integration tests and AppImage replay/model/GUI checks must pass CI. Physical camera, subjective alignment, thermal, memory, motion delay and 10/30-minute acceptance remain NOT RUN.
 
-M03: Linux GLB implementation added; Android visual gate remains pending phone retest.
-M04/M05: Android implemented/compiled baseline; Linux implementation pending CI and physical webcam acceptance.
-M06–M14: TODO. Camera skeleton does not drive the avatar yet. Calibration, full-body retargeting and performance targets are not verified.
+M09/M10 exit gates are not VERIFIED merely because the solver is implemented or synthetic tests pass. User explicitly authorized continued implementation while physical checks remain open. General foot-contact IK, production rig approval, broader Linux compatibility and physical performance acceptance remain future work. Android port/re-enable waits for Linux acceptance and owner direction.
 
-Next: resolve CI failures, publish AppImage only after its packaged tracker and GUI checks pass, then execute docs/linux_testing.md with a real webcam. Preserve honest device-tested/untested labels.
+Next: resolve software CI failures, publish a Linux-only AppImage after all software checks, then use docs/linux_testing.md and docs/retargeting.md for a real webcam validation session. Record failures honestly and keep the previous successful release if a build fails.

@@ -27,3 +27,15 @@ Diagnostics from the same AppImage:
 ```
 
 Development builds can set `MIMIC_TRACKER_EXECUTABLE` to a frozen helper built by tools/linux/build_appimage.sh. End users should use the AppImage. Build dependencies are pinned in tools/linux/requirements.txt; packaging tools have pinned versions and SHA-256 checks.
+
+## 0.5.0 live retargeting
+
+Show shoulders, elbows, wrists and hips, start Upper body, then Calibrate T-pose. Hold still until progress completes (at least 1.5 seconds and 15 valid frames). Bent/occluded arms and small framing must prevent calibration. Verify the left/right arms independently, hands forward, torso lean and neutral return.
+
+Change smoothing and compare jitter/delay. Preview mirror must not change avatar mapping; Mirror avatar deliberately swaps movement sides and requires recalibration. Switching camera/body mode must invalidate the old calibration. Hide a wrist or leave frame: hold briefly, blend to neutral and recover smoothly; do not silently freeze forever.
+
+For Full body • beta, show knees/ankles and stand upright during calibration. Verify crouching bends joints and changes only display height, never character scale; stepping should lift the correct leg. Approximate foot contact may slide/pitch because the development rig has no independent ankle bones. Root X/Z remain anchored. No accurate walking-through-room claim is made.
+
+Use labelled Replay test poses for a reproducible no-camera demonstration. It follows the same calibration, solve, filtering and actual GLB skinning path. Copy diagnostics exports source mode and software counters only, not camera images or landmarks.
+
+Run 20 start/stop/background cycles and 10/30-minute real sessions before calling these gates accepted. Record distribution/hardware, build tag, observed defects and timing method. Android builds remain disabled until Linux acceptance and owner direction.

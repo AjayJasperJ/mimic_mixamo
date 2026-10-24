@@ -1,7 +1,7 @@
 name: mimic_mixamo
 description: Offline character motion tracking development shell.
 publish_to: none
-version: 0.4.0+4
+version: 0.5.0+5
 environment:
   sdk: '>=3.9.0 <4.0.0'
 dependencies:

@@ -56,6 +56,14 @@ jobs:
           cat /tmp/mimic-launch.log
           if [ "$status" -ne 124 ]; then exit 1; fi
           grep -q MIMIC_LAUNCH_READY /tmp/mimic-launch.log
+      - name: Smoke test calibration and full-body replay in AppImage
+        run: |
+          set +e
+          timeout 25s xvfb-run -a env APPIMAGE_EXTRACT_AND_RUN=1 ./dist/Mimic-x86_64.AppImage --smoke-replay > /tmp/mimic-replay.log 2>&1
+          status=$?
+          cat /tmp/mimic-replay.log
+          if [ "$status" -ne 124 ]; then exit 1; fi
+          grep -q 'MIMIC_REPLAY_READY source=synthetic bones=10 mesh=true' /tmp/mimic-replay.log
       - name: Record build and checksum
         run: |
           cp README.md dist/README.md
@@ -156,7 +164,7 @@ jobs:
           cat > notes.md <<EOF
           <!-- mimic-managed-test-release -->
           Automated test build from commit $GITHUB_SHA.
-          Linux x86_64 AppImage with bundled webcam tracker and skinned GLB preview, Linux-only release; Android runner is paused. Camera-to-avatar retargeting and physical-device acceptance remain pending.
+          Linux-only AppImage: T-pose calibration, live upper-body retargeting, smoothing/loss recovery and experimental full-body grounding. Android runner remains paused. Real-device accuracy and performance acceptance remain pending.
           Linux: chmod +x Mimic-x86_64.AppImage, then run ./Mimic-x86_64.AppImage. No Python installation or sidecar files required.
           Only the newest successful automatic test release is retained.
           EOF

@@ -5,23 +5,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-void main() {
+void main(List<String> args) {
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks(['Filament 1.56.0', 'CameraX 1.3.4', 'MediaPipe Tasks 0.10.14'],
       await rootBundle.loadString('assets/notices/FILAMENT_APACHE_2_0.txt'));
   });
-  runApp(const MimicApp());
+  runApp(MimicApp(replaySmoke:args.contains('--smoke-replay')));
 }
 
 class MimicApp extends StatelessWidget {
-  const MimicApp({super.key});
+  const MimicApp({super.key,this.replaySmoke=false});
+  final bool replaySmoke;
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'Mimic', debugShowCheckedModeBanner: false,
     theme: ThemeData.dark(useMaterial3: true).copyWith(
       scaffoldBackgroundColor: const Color(0xff10151f),
       colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff69dfbf), brightness: Brightness.dark)),
-    home: const SessionScreen(),
+    home: replaySmoke ? const CameraScreen(autoReplay:true) : const SessionScreen(),
   );
 }
 
@@ -60,13 +61,13 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
   }
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('MIMIC / motion lab · 0.4.0')),
+    appBar: AppBar(title: const Text('MIMIC / motion lab · 0.5.0')),
     body: SafeArea(child: Center(child: ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 1000),
       child: ListView(padding: const EdgeInsets.all(24), children: [
         const Text('Your movement. A new character.', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        const Text('Android + Linux camera tracking • GLB rig lab', style: TextStyle(color: Color(0xff69dfbf))),
+        const Text('Linux live mimicry • calibration + skinned GLB', style: TextStyle(color: Color(0xff69dfbf))),
         const SizedBox(height: 16),
         FilledButton.icon(onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CameraScreen())), icon: const Icon(Icons.videocam), label: const Text('Open camera tracking')),
         const SizedBox(height: 16),
@@ -90,7 +91,7 @@ class _SessionScreenState extends State<SessionScreen> with SingleTickerProvider
         Slider(value: _bend, onChanged: _playing ? null : (value) => setState(() => _bend = value)),
         const Text('Linux and Android have separate camera skeleton and 3D rig screens. The synthetic simulator does not capture camera frames.'),
         const SizedBox(height: 24),
-        const Text('Next gate: verify camera landmarks and GLB rendering on your Android phone before calibrated retargeting.', style: TextStyle(color: Colors.white70)),
+        const Text('Linux: calibrate a T-pose, then drive the avatar. Android builds are paused until Linux validation succeeds.', style: TextStyle(color: Colors.white70)),
       ]),
     ))),
   );

@@ -10,6 +10,7 @@ from pathlib import Path
 import signal
 import sys
 import time
+import uuid
 
 MODEL_SHA256 = '59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a'
 
@@ -78,7 +79,8 @@ def run(args):
             cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
             cap.set(cv2.CAP_PROP_FPS,30)
             cap.set(cv2.CAP_PROP_BUFFERSIZE,1)
-            emit({'kind':'ready','device':args.device})
+            session=uuid.uuid4().hex
+            emit({'kind':'ready','device':args.device,'schemaVersion':2,'sessionId':session})
             sequence=0
             previous=-1
             for command in sys.stdin:
@@ -93,13 +95,15 @@ def run(args):
                 started=time.monotonic_ns()
                 detected=detector.detect_for_video(mp.Image(image_format=mp.ImageFormat.SRGB,data=rgb),timestamp)
                 latency=(time.monotonic_ns()-started)//1_000_000
-                points=[{'x':float(p.x),'y':float(p.y),'visibility':p.visibility,'presence':p.presence}
+                points=[{'x':float(p.x),'y':float(p.y),'z':float(p.z),'visibility':p.visibility,'presence':p.presence}
                         for p in (detected.pose_landmarks[0] if detected.pose_landmarks else [])]
+                world=[{'x':float(p.x),'y':float(p.y),'z':float(p.z),'visibility':p.visibility,'presence':p.presence}
+                       for p in (detected.pose_world_landmarks[0] if detected.pose_world_landmarks else [])]
                 # Landmarks and the JPEG are always from the same processed frame.
                 ok,jpeg=cv2.imencode('.jpg',frame,[cv2.IMWRITE_JPEG_QUALITY,75])
                 if not ok: raise RuntimeError('JPEG encoding failed')
                 sequence+=1
-                emit({'kind':'frame','jpeg':base64.b64encode(jpeg).decode('ascii'),
+                emit({'kind':'frame','schemaVersion':2,'sessionId':session,'sequence':sequence,'capturedAtUs':timestamp*1000,'worldPoints':world,'jpeg':base64.b64encode(jpeg).decode('ascii'),
                       'width':int(frame.shape[1]),'height':int(frame.shape[0]),
                       'points':points,'frames':sequence,'inferenceMs':latency,
                       'device':args.device})

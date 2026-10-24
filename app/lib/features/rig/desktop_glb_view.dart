@@ -6,8 +6,9 @@ import 'glb_mesh.dart';
 import 'rig_pose.dart';
 
 class DesktopGlbView extends StatefulWidget {
-  const DesktopGlbView({super.key, required this.pose});
+  const DesktopGlbView({super.key, required this.pose, this.onMeshReady});
   final RigPose pose;
+  final VoidCallback? onMeshReady;
   @override
   State<DesktopGlbView> createState() => _DesktopGlbViewState();
 }
@@ -16,7 +17,9 @@ class _DesktopGlbViewState extends State<DesktopGlbView> {
   double _yaw = .3;
   Future<GlbMesh> _load() async {
     final bytes = await rootBundle.load('assets/characters/development_humanoid.glb');
-    return GlbMesh.parse(bytes.buffer.asUint8List(bytes.offsetInBytes,bytes.lengthInBytes));
+    final mesh = GlbMesh.parse(bytes.buffer.asUint8List(bytes.offsetInBytes,bytes.lengthInBytes));
+    if (mounted) widget.onMeshReady?.call();
+    return mesh;
   }
   @override
   Widget build(BuildContext context) => FutureBuilder<GlbMesh>(future:_asset,builder:(context,snapshot) {
@@ -39,8 +42,9 @@ class SkinnedGlbPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size,Paint()..color=const Color(0xff171f2b));
     final posed=mesh.posedVertices(pose);
     final rotated=posed.map((p)=>v.Vector3(p.x*math.cos(yaw)+p.z*math.sin(yaw),p.y-.9,-p.x*math.sin(yaw)+p.z*math.cos(yaw))).toList();
-    final scale=math.min(size.width/2.2,size.height/2.0);
+    final scale=math.min(size.width/2.4,size.height/2.8);
     Offset project(v.Vector3 p)=>Offset(size.width/2+p.x*scale,size.height/2-p.y*scale);
+    canvas.drawLine(Offset(12,size.height/2+.9*scale),Offset(size.width-12,size.height/2+.9*scale),Paint()..color=Colors.white24..strokeWidth=1);
     final faces=List<int>.generate(mesh.indices.length~/3,(i)=>i*3);
     faces.sort((a,b) {
       double depth(int i)=>(rotated[mesh.indices[i]].z+rotated[mesh.indices[i+1]].z+rotated[mesh.indices[i+2]].z)/3;

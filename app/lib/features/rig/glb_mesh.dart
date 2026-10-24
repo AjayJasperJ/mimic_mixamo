@@ -104,11 +104,14 @@ class GlbMesh {
       visiting[index] = true;
       final node = nodes[index];
       final t = node['translation'] == null ? [0.0,0.0,0.0] : _numbers(node['translation']);
+      if (node['name'] == 'Hips') t[1] += pose.rootYOffset;
       final q = node['rotation'] == null ? [0.0,0.0,0.0,1.0] : _numbers(node['rotation']);
       final s = node['scale'] == null ? [1.0,1.0,1.0] : _numbers(node['scale']);
       final local = node['matrix'] != null ? v.Matrix4.fromList(_numbers(node['matrix'])) : v.Matrix4.compose(v.Vector3.array(t),v.Quaternion(q[0],q[1],q[2],q[3]),v.Vector3.array(s));
       final angle = angles[node['name']] ?? 0;
-      local.multiply(v.Matrix4.rotationZ(angle*math.pi/180));
+      final tracked = pose.localRotations[node['name']];
+      local.multiply(tracked == null ? v.Matrix4.rotationZ(angle*math.pi/180) : v.Matrix4.compose(
+        v.Vector3.zero(),v.Quaternion(tracked.x,tracked.y,tracked.z,tracked.w),v.Vector3.all(1)));
       final result = parents[index] == -1 ? local : (global(parents[index]).clone()..multiply(local));
       visiting[index] = false; world[index] = result; return result;
     }
