@@ -128,6 +128,16 @@ class _LinuxCameraViewState extends State<LinuxCameraView>
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                'iPhone live camera: open the Iriun Webcam Linux client and '
+                'iPhone app, connect them, then refresh webcams and select '
+                '“iPhone via Iriun Webcam”.',
+              ),
+            ),
+          ),
           Row(
             children: [
               const Text('Linux webcam'),

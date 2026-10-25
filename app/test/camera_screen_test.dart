@@ -36,4 +36,31 @@ void main() {
       }
     },
   );
+
+  testWidgets('shows Iriun as an iPhone webcam source', (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    final tracker = _NoDiscoveryTracker()
+      ..devices = [
+        const WebcamDevice(
+          '/dev/video6',
+          'iPhone via Iriun Webcam (video6)',
+          kind: 'iriun',
+        ),
+      ];
+    try {
+      tester.view.physicalSize = const Size(1200, 1600);
+      tester.view.devicePixelRatio = 1;
+      await tester.pumpWidget(
+        MaterialApp(home: CameraScreen(tracker: tracker)),
+      );
+      expect(find.textContaining('iPhone live camera'), findsOneWidget);
+      expect(find.text('iPhone via Iriun Webcam (video6)'), findsOneWidget);
+      expect(tracker.devices.single.isIriun, isTrue);
+    } finally {
+      await tester.pumpWidget(const SizedBox.shrink());
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
 }

@@ -28,6 +28,10 @@ Diagnostics from the same AppImage:
 
 In `flutter run -d linux` debug mode, the app falls back to `tools/linux/mimic_tracker.py` to enumerate `/dev/video*` devices. Starting inference also needs the pinned Python dependencies and both fetched task files; run `python3 tools/python/fetch_pose_model.py` and `python3 tools/python/fetch_hand_model.py`, then install `tools/linux/requirements.txt` in the development Python 3.10 environment. A frozen helper can instead be selected with `MIMIC_TRACKER_EXECUTABLE`. This source fallback is debug-only; end users should use the AppImage, which bundles Python, dependencies and both models. Packaging tools have pinned versions and SHA-256 checks.
 
+### iPhone as a live camera with Iriun Webcam
+
+Install the [Iriun Webcam Linux client](https://www.iriun.com/) on the computer and Iriun Webcam from the iPhone App Store. Open the desktop client and phone app, connect them using Iriun's pairing instructions, and wait for its virtual webcam to appear. In Mimic, press Refresh webcams and select **iPhone via Iriun Webcam**. If more than one Iriun `/dev/video*` entry appears, try each capture entry; then press Start camera and calibrate. The tracker reads the local Linux video device through OpenCV/V4L2; it does not ingest an iPhone network stream directly. Keep the Iriun client open while tracking. This path is implemented but still needs physical iPhone/Iriun validation on the target Linux machine.
+
 ## 0.5.0 live retargeting
 
 Show shoulders, elbows, wrists and hips, start Upper body, then Calibrate T-pose. Hold still until progress completes (at least 1.5 seconds and 15 valid frames). Bent/occluded arms and small framing must prevent calibration. Verify the left/right arms independently, hand pose and finger curl where the hands are visible, torso lean and neutral return.

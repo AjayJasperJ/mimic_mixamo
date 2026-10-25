@@ -16,16 +16,42 @@ MODEL_SHA256 = '59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a
 HAND_MODEL_SHA256 = 'fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1'
 
 
-def devices():
+def device_info(path, sys_class_root='/sys/class/video4linux'):
+    node=Path(path).name
+    try:
+        name=Path(sys_class_root,node,'name').read_text().strip()
+    except OSError:
+        name=node
+    is_iriun='iriun' in name.casefold()
+    return {
+        'path':path,
+        'name':f'{"iPhone via Iriun Webcam" if is_iriun else name} ({node})',
+        'kind':'iriun' if is_iriun else 'webcam',
+    }
+
+
+def devices(device_paths=None, sys_class_root='/sys/class/video4linux'):
     result=[]
-    for path in sorted(glob.glob('/dev/video*')):
-        node=Path(path).name
-        try:
-            name=Path('/sys/class/video4linux',node,'name').read_text().strip()
-        except OSError:
-            name=node
-        result.append({'path':path,'name':f'{name} ({node})'})
+    paths=sorted(glob.glob('/dev/video*') if device_paths is None else device_paths)
+    for path in paths:
+        result.append(device_info(path,sys_class_root))
     return result
+
+
+def open_capture(cv2, device):
+    """Open Linux webcams through V4L2, with OpenCV backend fallback."""
+    capture=cv2.VideoCapture(device,cv2.CAP_V4L2)
+    if capture.isOpened():
+        return capture
+    capture.release()
+    capture=cv2.VideoCapture(device,cv2.CAP_ANY)
+    if capture.isOpened():
+        return capture
+    capture.release()
+    raise RuntimeError(
+        f'Cannot open {device}. Check webcam permissions, close other camera apps, '
+        'and confirm the iPhone webcam service is connected.'
+    )
 
 
 def emit(value):
@@ -125,16 +151,16 @@ def run(args):
             return
         if not args.device.startswith('/dev/video') or not args.device[10:].isdigit():
             raise ValueError('Select a /dev/video<number> webcam')
-        cap=cv2.VideoCapture(args.device,cv2.CAP_V4L2)
+        cap=open_capture(cv2,args.device)
         try:
-            if not cap.isOpened():
-                raise RuntimeError(f'Cannot open {args.device}. Check webcam permissions or close another camera app.')
             cap.set(cv2.CAP_PROP_FRAME_WIDTH,640)
             cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
             cap.set(cv2.CAP_PROP_FPS,30)
             cap.set(cv2.CAP_PROP_BUFFERSIZE,1)
             session=uuid.uuid4().hex
-            emit({'kind':'ready','device':args.device,'schemaVersion':3,'sessionId':session})
+            selected=device_info(args.device)
+            emit({'kind':'ready','device':args.device,'deviceName':selected['name'],
+                  'deviceKind':selected['kind'],'schemaVersion':3,'sessionId':session})
             sequence=0
             previous=-1
             for command in sys.stdin:
@@ -162,7 +188,7 @@ def run(args):
                 emit({'kind':'frame','schemaVersion':3,'sessionId':session,'sequence':sequence,'capturedAtUs':timestamp*1000,'worldPoints':world,**hand_data,'jpeg':base64.b64encode(jpeg).decode('ascii'),
                       'width':int(frame.shape[1]),'height':int(frame.shape[0]),
                       'points':points,'frames':sequence,'inferenceMs':latency,
-                      'device':args.device})
+                      'device':args.device,'deviceKind':selected['kind']})
         finally:
             cap.release()
 
