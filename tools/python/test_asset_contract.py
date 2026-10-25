@@ -2,13 +2,48 @@
 import math
 import sys
 import struct
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from generate_dev_rig import BONES, generate
 from inspect_glb import inspect
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'linux'))
-from mimic_tracker import hand_points
+from mimic_tracker import devices, hand_points, open_capture
+
+
+class IriunWebcamSupport(unittest.TestCase):
+    def test_iriun_video_node_is_identified_as_an_iphone_source(self):
+        with tempfile.TemporaryDirectory() as root:
+            camera=Path(root)/'video6'
+            camera.mkdir()
+            (camera/'name').write_text('Iriun Webcam')
+            found=devices(['/dev/video6'],root)
+        self.assertEqual(found,[{
+            'path':'/dev/video6',
+            'name':'iPhone via Iriun Webcam (video6)',
+            'kind':'iriun',
+        }])
+
+    def test_capture_falls_back_when_v4l2_backend_rejects_virtual_camera(self):
+        class Capture:
+            def __init__(self,opened): self.opened=opened; self.released=False
+            def isOpened(self): return self.opened
+            def release(self): self.released=True
+        class OpenCv:
+            CAP_V4L2=200
+            CAP_ANY=0
+            def __init__(self): self.backends=[]; self.instances=[]
+            def VideoCapture(self,path,backend):
+                self.backends.append((path,backend))
+                capture=Capture(backend==self.CAP_ANY)
+                self.instances.append(capture)
+                return capture
+        cv2=OpenCv()
+        result=open_capture(cv2,'/dev/video6')
+        self.assertIs(result,cv2.instances[1])
+        self.assertTrue(cv2.instances[0].released)
+        self.assertEqual(cv2.backends,[('/dev/video6',200),('/dev/video6',0)])
 
 
 class WorkerHandAssociation(unittest.TestCase):

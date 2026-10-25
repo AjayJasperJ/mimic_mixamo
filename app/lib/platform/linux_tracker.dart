@@ -7,8 +7,10 @@ import '../features/retargeting/retarget_engine.dart';
 import '../features/retargeting/replay_fixture.dart';
 
 class WebcamDevice {
-  const WebcamDevice(this.path, this.name);
+  const WebcamDevice(this.path, this.name, {this.kind = 'webcam'});
   final String path, name;
+  final String kind;
+  bool get isIriun => kind == 'iriun';
 }
 
 class LinuxTracker extends ChangeNotifier {
@@ -24,6 +26,7 @@ class LinuxTracker extends ChangeNotifier {
   Timer? _credit, _watchdog, _poseTick, _replayTick;
   int _epoch = 0, _replayMotionStart = 0;
   bool _disposed = false, _outstanding = false;
+  String _activeSourceLabel = 'Camera';
   String status = 'Select a webcam and press Start camera';
   List<WebcamDevice> devices = [];
   Uint8List? jpeg;
@@ -117,7 +120,11 @@ class LinuxTracker extends ChangeNotifier {
       final value = jsonDecode(result.stdout as String) as Map<String, Object?>;
       devices = (value['devices'] as List<Object?>).map((item) {
         final d = item as Map<String, Object?>;
-        return WebcamDevice(d['path'] as String, d['name'] as String);
+        return WebcamDevice(
+          d['path'] as String,
+          d['name'] as String,
+          kind: d['kind'] as String? ?? 'webcam',
+        );
       }).toList();
       if (!running)
         status = devices.isEmpty
@@ -174,7 +181,12 @@ class LinuxTracker extends ChangeNotifier {
   Future<void> start(String device) async {
     stop();
     final token = _epoch;
-    status = 'Starting camera tracking';
+    final selected = devices.where((candidate) => candidate.path == device);
+    final isIriun = selected.isNotEmpty && selected.first.isIriun;
+    _activeSourceLabel = isIriun ? 'iPhone via Iriun Webcam' : 'Camera';
+    status = isIriun
+        ? 'Connecting to iPhone via Iriun Webcam'
+        : 'Starting camera tracking';
     _changed();
     try {
       final command = _workerCommand(['--device', device]);
@@ -219,9 +231,12 @@ class LinuxTracker extends ChangeNotifier {
                         'Worker protocol mismatch. Install the newest AppImage.',
                       );
                     solver.attach(event['sessionId'] as String);
+                    _activeSourceLabel = event['deviceKind'] == 'iriun'
+                        ? 'iPhone via Iriun Webcam'
+                        : 'Camera';
                     running = true;
                     status =
-                        'Camera active • calibrate before driving the avatar';
+                        '$_activeSourceLabel live • calibrate before driving the avatar';
                     _startPoseClock();
                     _next(token);
                     _changed();
@@ -276,8 +291,8 @@ class LinuxTracker extends ChangeNotifier {
                       ),
                     ];
                     status = bodyPoints.isEmpty
-                        ? 'Camera active • searching for a person'
-                        : 'Body landmarks detected';
+                        ? '$_activeSourceLabel live • searching for a person'
+                        : '$_activeSourceLabel live • body landmarks detected';
                     _watchdog?.cancel();
                     _changed();
                     _credit?.cancel();
