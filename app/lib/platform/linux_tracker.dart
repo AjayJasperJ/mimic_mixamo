@@ -213,7 +213,7 @@ class LinuxTracker extends ChangeNotifier {
                 final event = jsonDecode(line) as Map<String, Object?>;
                 switch (event['kind']) {
                   case 'ready':
-                    if (event['schemaVersion'] != 2 ||
+                    if (event['schemaVersion'] != 3 ||
                         event['sessionId'] is! String)
                       throw const FormatException(
                         'Worker protocol mismatch. Install the newest AppImage.',
@@ -243,14 +243,39 @@ class LinuxTracker extends ChangeNotifier {
                     height = (event['height'] as num).toInt();
                     frames = (event['frames'] as num).toInt();
                     inferenceMs = (event['inferenceMs'] as num).toInt();
-                    points = (event['points'] as List<Object?>)
+                    final bodyPoints = (event['points'] as List<Object?>)
                         .map(
                           (p) => Map<String, Object?>.from(
                             p as Map<Object?, Object?>,
                           ),
                         )
                         .toList();
-                    status = points.isEmpty
+                    List<Map<String, Object?>> readHandImage(String key) =>
+                        ((event[key] as List<Object?>?) ?? const [])
+                            .map(
+                              (p) => Map<String, Object?>.from(
+                                p as Map<Object?, Object?>,
+                              ),
+                            )
+                            .toList();
+                    final emptyHand = List<Map<String, Object?>>.filled(
+                      21,
+                      const {'x': null, 'y': null},
+                    );
+                    points = [
+                      ...bodyPoints,
+                      ...List<Map<String, Object?>>.filled(33, const {
+                        'x': null,
+                        'y': null,
+                      }).skip(bodyPoints.length),
+                      ...readHandImage('leftHandPoints'),
+                      ...emptyHand.skip(readHandImage('leftHandPoints').length),
+                      ...readHandImage('rightHandPoints'),
+                      ...emptyHand.skip(
+                        readHandImage('rightHandPoints').length,
+                      ),
+                    ];
+                    status = bodyPoints.isEmpty
                         ? 'Camera active • searching for a person'
                         : 'Body landmarks detected';
                     _watchdog?.cancel();

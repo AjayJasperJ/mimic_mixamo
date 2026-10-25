@@ -29,13 +29,18 @@ class BodyFrame {
     required this.capturedAtUs,
     required List<BodyPoint?> world,
     required List<BodyPoint?> image,
+    List<BodyPoint?> leftHandWorld = const [],
+    List<BodyPoint?> rightHandWorld = const [],
   }) : world = List.unmodifiable(world),
-       image = List.unmodifiable(image);
+       image = List.unmodifiable(image),
+       leftHandWorld = List.unmodifiable(leftHandWorld),
+       rightHandWorld = List.unmodifiable(rightHandWorld);
   final String sessionId;
   final int sequence, capturedAtUs;
   final List<BodyPoint?> world, image;
+  final List<BodyPoint?> leftHandWorld, rightHandWorld;
   factory BodyFrame.parse(Map<String, Object?> event) {
-    if (event['schemaVersion'] != 2 || event['sessionId'] is! String)
+    if (event['schemaVersion'] != 3 || event['sessionId'] is! String)
       throw const FormatException(
         'Tracking helper protocol mismatch. Use the newest AppImage.',
       );
@@ -43,6 +48,15 @@ class BodyFrame {
       final raw = event[key];
       if (raw is! List<Object?> || (raw.isNotEmpty && raw.length != 33))
         throw FormatException('Invalid $key landmark count');
+      return raw.map(BodyPoint.parse).toList();
+    }
+
+    List<BodyPoint?> readHand(String key) {
+      final raw = event[key];
+      if (raw == null) return const [];
+      if (raw is! List<Object?> || (raw.isNotEmpty && raw.length != 21)) {
+        throw FormatException('Invalid $key landmark count');
+      }
       return raw.map(BodyPoint.parse).toList();
     }
 
@@ -56,6 +70,8 @@ class BodyFrame {
       capturedAtUs: time,
       world: read('worldPoints'),
       image: read('points'),
+      leftHandWorld: readHand('leftHandWorld'),
+      rightHandWorld: readHand('rightHandWorld'),
     );
   }
 
@@ -85,6 +101,46 @@ class BodyFrame {
       V3(mirror ? -p.x : p.x, -p.y, -p.z),
       visibility: raw.visibility,
       presence: raw.presence,
+    );
+  }
+
+  /// Hand Landmarker world points are wrist-origin, camera-oriented metres.
+  /// Anchor them to the matching Pose wrist before applying the solver basis.
+  BodyPoint? solverHandPoint(bool left, int index, {bool mirror = false}) {
+    final anatomicalLeft = mirror ? !left : left;
+    final hand = anatomicalLeft ? leftHandWorld : rightHandWorld;
+    final rawWrist = world.length > (anatomicalLeft ? 15 : 16)
+        ? world[anatomicalLeft ? 15 : 16]
+        : null;
+    final wrist = rawWrist == null || !rawWrist.usable
+        ? null
+        : BodyPoint(
+            V3(
+              mirror ? -rawWrist.position.x : rawWrist.position.x,
+              -rawWrist.position.y,
+              -rawWrist.position.z,
+            ),
+          );
+    if (hand.length != 21 ||
+        index < 0 ||
+        index >= hand.length ||
+        wrist == null) {
+      return null;
+    }
+    final localWrist = hand[0];
+    final local = hand[index];
+    if (local == null ||
+        localWrist == null ||
+        !local.usable ||
+        !localWrist.usable) {
+      return null;
+    }
+    final offset = local.position - localWrist.position;
+    final converted = V3(mirror ? -offset.x : offset.x, -offset.y, -offset.z);
+    return BodyPoint(
+      wrist.position + converted,
+      visibility: local.visibility,
+      presence: local.presence,
     );
   }
 }

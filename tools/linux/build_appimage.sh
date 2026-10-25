@@ -4,15 +4,18 @@ cd "$(dirname "$0")/../.."
 MIMIC_STAGE="$PWD/build/appimage"
 mkdir -p "$MIMIC_STAGE/tooling" dist
 python3 tools/python/fetch_pose_model.py
+python3 tools/python/fetch_hand_model.py
 python3 -m PyInstaller --noconfirm --clean --onedir --name mimic-tracker \
   --distpath "$MIMIC_STAGE/frozen" --workpath "$MIMIC_STAGE/pyinstaller" --specpath "$MIMIC_STAGE" \
   --collect-all mediapipe --collect-all cv2 \
   --exclude-module jax --exclude-module jaxlib --exclude-module tensorflow --exclude-module torch \
   --add-data "$PWD/app/packages/mimic_native/android/src/main/assets/pose_landmarker_lite.task:." \
+  --add-data "$PWD/app/packages/mimic_native/android/src/main/assets/hand_landmarker.task:." \
   tools/linux/mimic_tracker.py
 "$MIMIC_STAGE/frozen/mimic-tracker/mimic-tracker" --self-test
 MIMIC_APPDIR="$MIMIC_STAGE/AppDir"
 mkdir -p "$MIMIC_APPDIR/usr/bin" "$MIMIC_APPDIR/usr/lib" "$MIMIC_APPDIR/usr/share/doc/mimic"
+install -m 0755 "$(command -v assimp)" "$MIMIC_APPDIR/usr/bin/mimic-assimp"
 cp -a app/build/linux/x64/release/bundle/. "$MIMIC_APPDIR/usr/bin/"
 cp README.md "$MIMIC_APPDIR/usr/share/doc/mimic/"
 python3 -m pip freeze > "$MIMIC_APPDIR/usr/share/doc/mimic/python-environment.txt"
@@ -23,6 +26,7 @@ printf '%s  %s\n' c20cd71e3a4e3b80c3483cef793cda3f4e990aca14014d23c544ca3ce1270b
 chmod +x "$MIMIC_STAGE/tooling/linuxdeploy.AppImage"
 NO_STRIP=1 APPIMAGE_EXTRACT_AND_RUN=1 "$MIMIC_STAGE/tooling/linuxdeploy.AppImage" \
   --appdir "$MIMIC_APPDIR" --executable "$MIMIC_APPDIR/usr/bin/mimic_mixamo" \
+  --executable "$MIMIC_APPDIR/usr/bin/mimic-assimp" \
   --desktop-file tools/linux/mimic.desktop --icon-file tools/linux/mimic.svg
 # Preserve PyInstaller's private dependency names and RPATHs: linuxdeploy must not rewrite this tree.
 cp -a "$MIMIC_STAGE/frozen/mimic-tracker" "$MIMIC_APPDIR/usr/lib/"

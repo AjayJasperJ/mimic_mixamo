@@ -19,6 +19,18 @@ BONES = [
     ('RightThigh', 0, (-.12, -.05, 0)),
     ('RightShin', 8, (0, -.42, 0)),
 ]
+HAND_START = len(BONES)
+for side, forearm, sign in [('Left', 3, 1), ('Right', 5, -1)]:
+    hand = len(BONES)
+    BONES.append((side+'Hand', forearm, (sign*.20, 0, 0)))
+    for finger, spread in [('Thumb',-.10), ('Index',-.065), ('Middle',-.02), ('Ring',.025), ('Pinky',.07)]:
+        parent = hand
+        for segment in range(1, 4):
+            name = f'{side}{finger}{segment}'
+            # Finger chains extend from the palm along the forearm's local X axis.
+            t = (sign*(.045 if segment == 1 else .055), spread if segment == 1 else 0, 0)
+            BONES.append((name, parent, t))
+            parent = len(BONES)-1
 
 
 def generate():
@@ -62,6 +74,14 @@ def generate():
         box((sign*.12,.64,0), (.14,.40,.16), thigh)
         box((sign*.12,.22,0), (.12,.40,.14), shin)
         box((sign*.12,.035,.06), (.15,.07,.27), shin)
+    for side, sign, hand in [('Left',1,HAND_START),('Right',-1,HAND_START+16)]:
+        box((sign*.87,1.45,0),(.18,.105,.11),hand)
+        for f,spread in enumerate([-.10,-.065,-.02,.025,.07]):
+            root=hand+1+f*3
+            length=.12 if f==0 else .145-(f-2).__abs__()*.012
+            for seg in range(3):
+                center_x=sign*(.845+seg*.055+length/6)
+                box((center_x,1.45+spread,0),(length/3,.026,.026),root+seg)
     p=accessor(positions,'fff',5126,'VEC3',True)
     j=accessor(joints,'HHHH',5123,'VEC4')
     w=accessor(weights,'ffff',5126,'VEC4')
