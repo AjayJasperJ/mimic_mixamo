@@ -3,8 +3,8 @@
   "kind": "original development placeholder; not Mixamo",
   "source": "tools/python/generate_dev_rig.py",
   "license": "CC0-1.0",
-  "sha256": "8c6facd9141598ecd99e27d80ebc87554e7dd7846640798197aaa558c7c2ae5d",
-  "triangles": 156,
+  "sha256": "b0816c49c8a2f79158bf3dae097fe264827c3bfd715eb73e802c6283a6c385ff",
+  "triangles": 540,
   "units": "meters",
   "up": "+Y",
   "forward": "+Z",
@@ -208,6 +208,678 @@
       "translation": [
         0,
         -0.42,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 10,
+      "name": "LeftHand",
+      "parent": 3,
+      "translation": [
+        0.2,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 11,
+      "name": "LeftThumb1",
+      "parent": 10,
+      "translation": [
+        0.045,
+        -0.1,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 12,
+      "name": "LeftThumb2",
+      "parent": 11,
+      "translation": [
+        0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 13,
+      "name": "LeftThumb3",
+      "parent": 12,
+      "translation": [
+        0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 14,
+      "name": "LeftIndex1",
+      "parent": 10,
+      "translation": [
+        0.045,
+        -0.065,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 15,
+      "name": "LeftIndex2",
+      "parent": 14,
+      "translation": [
+        0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 16,
+      "name": "LeftIndex3",
+      "parent": 15,
+      "translation": [
+        0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 17,
+      "name": "LeftMiddle1",
+      "parent": 10,
+      "translation": [
+        0.045,
+        -0.02,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 18,
+      "name": "LeftMiddle2",
+      "parent": 17,
+      "translation": [
+        0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 19,
+      "name": "LeftMiddle3",
+      "parent": 18,
+      "translation": [
+        0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 20,
+      "name": "LeftRing1",
+      "parent": 10,
+      "translation": [
+        0.045,
+        0.025,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 21,
+      "name": "LeftRing2",
+      "parent": 20,
+      "translation": [
+        0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 22,
+      "name": "LeftRing3",
+      "parent": 21,
+      "translation": [
+        0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 23,
+      "name": "LeftPinky1",
+      "parent": 10,
+      "translation": [
+        0.045,
+        0.07,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 24,
+      "name": "LeftPinky2",
+      "parent": 23,
+      "translation": [
+        0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 25,
+      "name": "LeftPinky3",
+      "parent": 24,
+      "translation": [
+        0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 26,
+      "name": "RightHand",
+      "parent": 5,
+      "translation": [
+        -0.2,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 27,
+      "name": "RightThumb1",
+      "parent": 26,
+      "translation": [
+        -0.045,
+        -0.1,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 28,
+      "name": "RightThumb2",
+      "parent": 27,
+      "translation": [
+        -0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 29,
+      "name": "RightThumb3",
+      "parent": 28,
+      "translation": [
+        -0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 30,
+      "name": "RightIndex1",
+      "parent": 26,
+      "translation": [
+        -0.045,
+        -0.065,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 31,
+      "name": "RightIndex2",
+      "parent": 30,
+      "translation": [
+        -0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 32,
+      "name": "RightIndex3",
+      "parent": 31,
+      "translation": [
+        -0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 33,
+      "name": "RightMiddle1",
+      "parent": 26,
+      "translation": [
+        -0.045,
+        -0.02,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 34,
+      "name": "RightMiddle2",
+      "parent": 33,
+      "translation": [
+        -0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 35,
+      "name": "RightMiddle3",
+      "parent": 34,
+      "translation": [
+        -0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 36,
+      "name": "RightRing1",
+      "parent": 26,
+      "translation": [
+        -0.045,
+        0.025,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 37,
+      "name": "RightRing2",
+      "parent": 36,
+      "translation": [
+        -0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 38,
+      "name": "RightRing3",
+      "parent": 37,
+      "translation": [
+        -0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 39,
+      "name": "RightPinky1",
+      "parent": 26,
+      "translation": [
+        -0.045,
+        0.07,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 40,
+      "name": "RightPinky2",
+      "parent": 39,
+      "translation": [
+        -0.055,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "index": 41,
+      "name": "RightPinky3",
+      "parent": 40,
+      "translation": [
+        -0.055,
+        0,
         0
       ],
       "rotation": [

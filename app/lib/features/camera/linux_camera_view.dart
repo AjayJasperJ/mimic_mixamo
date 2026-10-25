@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../platform/linux_tracker.dart';
 import '../rig/desktop_glb_view.dart';
+import '../rig/custom_character_store.dart';
 
 class LinuxCameraView extends StatefulWidget {
   const LinuxCameraView({super.key, this.tracker, this.autoReplay = false});
@@ -90,9 +91,14 @@ class _LinuxCameraViewState extends State<LinuxCameraView>
   Widget _avatar() => Stack(
     children: [
       Positioned.fill(
-        child: DesktopGlbView(
-          pose: _tracker.solver.pose,
-          onMeshReady: () => _meshReady = true,
+        child: ValueListenableBuilder<String?>(
+          valueListenable: CustomCharacterStore.selectedPath,
+          builder: (context, path, _) => DesktopGlbView(
+            key: ValueKey(path),
+            customPath: path,
+            pose: _tracker.solver.pose,
+            onMeshReady: () => _meshReady = true,
+          ),
         ),
       ),
       Positioned(
@@ -114,10 +120,10 @@ class _LinuxCameraViewState extends State<LinuxCameraView>
           !_smokeReported &&
           _meshReady &&
           solver.calibrated &&
-          solver.validBones == 10 &&
+          solver.validBones == 42 &&
           _tracker.frames > 38) {
         _smokeReported = true;
-        debugPrint('MIMIC_REPLAY_READY source=synthetic bones=10 mesh=true');
+        debugPrint('MIMIC_REPLAY_READY source=synthetic bones=42 mesh=true');
       }
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -273,7 +279,7 @@ class _LinuxCameraViewState extends State<LinuxCameraView>
           ),
           const SizedBox(height: 6),
           Text(
-            '${solver.poseRate.toStringAsFixed(1)} input frames/s • ${solver.validBones}/${solver.fullBody ? 10 : 6} valid bones • solver ${(solver.solverUs / 1000).toStringAsFixed(2)} ms'
+            '${solver.poseRate.toStringAsFixed(1)} input frames/s • ${solver.validBones}/${solver.fullBody ? 42 : 38} valid bones • solver ${(solver.solverUs / 1000).toStringAsFixed(2)} ms'
             '${_tracker.replaying ? ' • replay' : ' • inference ${_tracker.inferenceMs} ms'}',
           ),
         ],
@@ -356,6 +362,14 @@ class LinuxSkeletonPainter extends CustomPainter {
         );
       }
     }
+    for (final base in [33, 54]) {
+      for (final pair in articulatedHandConnections) {
+        final a = base + pair.$1, b = base + pair.$2;
+        if (b < points.length && valid(points[a]) && valid(points[b])) {
+          canvas.drawLine(point(points[a]), point(points[b]), handPaint);
+        }
+      }
+    }
     paint.color = Colors.white;
     for (final p in points) {
       if (valid(p)) canvas.drawCircle(point(p), 3, paint);
@@ -375,6 +389,28 @@ class LinuxSkeletonPainter extends CustomPainter {
     (16, 20),
     (16, 22),
     (18, 20),
+  ];
+  static const articulatedHandConnections = [
+    (0, 1),
+    (1, 2),
+    (2, 3),
+    (3, 4),
+    (0, 5),
+    (5, 6),
+    (6, 7),
+    (7, 8),
+    (0, 9),
+    (9, 10),
+    (10, 11),
+    (11, 12),
+    (0, 13),
+    (13, 14),
+    (14, 15),
+    (15, 16),
+    (0, 17),
+    (17, 18),
+    (18, 19),
+    (19, 20),
   ];
   static const connections = [
     (0, 1),

@@ -72,7 +72,9 @@ Only one component owns each resource. The session controller owns camera, detec
 | P1: upper-body MVP | Calibration, independent arms, approximate torso orientation, confidence fallback, smoothing, lifecycle |
 | P2: full-body beta | Hips and legs, constrained knees, grounded display, limited foot contact handling |
 | P3: release | Device profiles, diagnostics, thermal adaptation, accessibility, release package and documentation |
-| Later | Face/hands, motion recording/export, custom imports, multi-camera/depth support |
+| Later | Face tracking, motion recording/export, multi-camera/depth support |
+
+Owner-directed Linux 0.5.0 extension: import skinned Mixamo FBX/GLB characters and display them in the existing weighted-mesh preview and camera avatar. This is an implementation expansion; do not treat imported-rig compatibility as accepted until representative assets are checked against the supported format and retargeting limits in `docs/decisions.md`.
 
 Do not add later features to compensate for unfinished P0/P1 behavior. A free app and open-source code do not automatically grant redistribution rights to every model or character asset.
 

@@ -13,5 +13,13 @@ fi
 if [[ "${1:-}" == --tracker-list-devices ]]; then
   exec "$MIMIC_TRACKER_EXECUTABLE" --list-devices
 fi
+if [[ "${1:-}" == --assimp-self-test ]]; then
+  if "$MIMIC_APPDIR/usr/bin/mimic-assimp" listexport | grep -q 'glb2'; then
+    echo '{"ok":true,"kind":"assimp-self-test","exporter":"glb2"}'
+    exit 0
+  fi
+  echo 'Bundled Assimp does not provide the glb2 exporter' >&2
+  exit 1
+fi
 echo MIMIC_LAUNCH_READY >&2
 exec "$MIMIC_APPDIR/usr/bin/mimic_mixamo" "$@"
