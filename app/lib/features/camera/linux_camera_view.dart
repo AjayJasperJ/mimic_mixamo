@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../platform/linux_tracker.dart';
+import '../retargeting/retarget_engine.dart';
 import '../rig/desktop_glb_view.dart';
 import '../rig/custom_character_store.dart';
 
@@ -264,8 +265,13 @@ class _LinuxCameraViewState extends State<LinuxCameraView>
                   ? 'Calibration needs shoulders, elbows, wrists, hips, knees and ankles.'
                   : 'Calibration needs shoulders, elbows, wrists and hips.',
             ),
-          if (solver.calibrating)
+          if (solver.calibrating) ...[
             LinearProgressIndicator(value: solver.progress),
+            Text(
+              'Calibration: ${(solver.progress * 100).round()}% · '
+              '${solver.calibrationSamples}/${RetargetEngine.calibrationSampleTarget} good frames',
+            ),
+          ],
           const SizedBox(height: 8),
           Expanded(
             child: LayoutBuilder(

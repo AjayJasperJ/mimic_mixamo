@@ -34,7 +34,7 @@ Install the [Iriun Webcam Linux client](https://www.iriun.com/) on the computer 
 
 ## 0.5.0 live retargeting
 
-Show shoulders, elbows, wrists and hips, start Upper body, then Calibrate T-pose. Hold still until progress completes (at least 1.5 seconds and 15 valid frames). Bent/occluded arms and small framing must prevent calibration. Verify the left/right arms independently, hand pose and finger curl where the hands are visible, torso lean and neutral return.
+Show shoulders, elbows, wrists and hips, start Upper body, then Calibrate T-pose. Hold still while the good-frame count advances to 10 and progress passes 1.2 seconds. Brief landmark dropouts preserve progress; sustained loss restarts the sample window. Read the on-screen guidance if a required joint, confidence threshold or T-pose condition is not met. Verify the left/right arms independently, hand pose and finger curl where the hands are visible, torso lean and neutral return.
 
 Change smoothing and compare jitter/delay. Preview mirror must not change avatar mapping; Mirror avatar deliberately swaps movement sides and requires recalibration. Switching camera/body mode must invalidate the old calibration. Hide a wrist or leave frame: hold briefly, blend to neutral and recover smoothly; do not silently freeze forever.
 

@@ -22,7 +22,11 @@ class RetargetEngine {
       _lastBody = -10000000,
       _rateStart = 0,
       _rateFrames = 0;
-  int _calibrationStart = 0, _samples = 0;
+  static const _calibrationDurationUs = 1200000;
+  static const calibrationSampleTarget = 10;
+  static const _calibrationDropoutToleranceUs = 700000;
+  int _calibrationStart = 0, _lastCalibrationGood = 0, _samples = 0;
+  int get calibrationSamples => _samples;
   Rotation _reference = Rotation.identity;
   V3 _sumX = V3.zero, _sumUp = V3.zero;
   final Map<String, Rotation> _correction = {}, _lastGood = {}, _smoothed = {};
@@ -65,6 +69,7 @@ class RetargetEngine {
     progress = 0;
     _samples = 0;
     _calibrationStart = 0;
+    _lastCalibrationGood = 0;
     _sumX = V3.zero;
     _sumUp = V3.zero;
     _correction.clear();
@@ -193,25 +198,32 @@ class RetargetEngine {
   void _calibrate(BodyFrame frame, int now) {
     final issue = _calibrationIssue(frame);
     if (issue != null) {
-      _samples = 0;
-      progress = 0;
-      _calibrationStart = 0;
-      _sumX = V3.zero;
-      _sumUp = V3.zero;
-      guidance = issue;
+      if (_lastCalibrationGood == 0 ||
+          now - _lastCalibrationGood > _calibrationDropoutToleranceUs) {
+        _resetCalibrationSamples();
+      }
+      guidance = '$issue • calibration resumes when tracking is clear';
       return;
     }
     final basis = _basis(frame)!;
-    if (_samples == 0) _calibrationStart = now;
+    if (_samples == 0 ||
+        now - _lastCalibrationGood > _calibrationDropoutToleranceUs) {
+      _resetCalibrationSamples();
+      _calibrationStart = now;
+    }
+    _lastCalibrationGood = now;
     _samples++;
     _sumX = _sumX + basis.rotate(V3.right);
     _sumUp = _sumUp + basis.rotate(V3.up);
     progress = math
-        .min((now - _calibrationStart) / 1500000, _samples / 15)
+        .min(
+          (now - _calibrationStart) / _calibrationDurationUs,
+          _samples / calibrationSampleTarget,
+        )
         .clamp(0.0, 1.0)
         .toDouble();
     guidance =
-        'Hold the T-pose steady • ${(progress * 100).round()}% calibration';
+        'Hold the T-pose steady • ${_samples.clamp(0, calibrationSampleTarget)}/$calibrationSampleTarget good frames';
     if (progress < 1) return;
     final x = _sumX.unit(), y = (_sumUp - x * _sumUp.dot(x)).unit();
     _reference = Rotation.basis(x, y, x.cross(y).unit());
@@ -240,6 +252,15 @@ class RetargetEngine {
     _lastTick = now;
     _solve(frame, now);
     guidance = 'Calibrated. Move naturally; root position stays anchored.';
+  }
+
+  void _resetCalibrationSamples() {
+    _samples = 0;
+    _calibrationStart = 0;
+    _lastCalibrationGood = 0;
+    progress = 0;
+    _sumX = V3.zero;
+    _sumUp = V3.zero;
   }
 
   Map<String, Rotation> _globals(BodyFrame frame) {

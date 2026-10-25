@@ -134,6 +134,39 @@ void main() {
       expect(engine.progress, 1);
     },
   );
+  test('brief low-confidence frames do not restart T-pose calibration', () {
+    final engine = RetargetEngine()
+      ..attach('test')
+      ..beginCalibration();
+    double progressBeforeDropout = 0;
+    for (var i = 1; i <= 16; i++) {
+      final good = ReplayFixture.frame('test', i, i * 100000);
+      if (i % 4 == 0) {
+        final world = good.world.toList();
+        world[15] = BodyPoint(world[15]!.position, visibility: .1, presence: 1);
+        engine.receive(
+          BodyFrame(
+            sessionId: 'test',
+            sequence: i,
+            capturedAtUs: i * 100000,
+            world: world,
+            image: good.image,
+          ),
+          i * 100000,
+        );
+        if (progressBeforeDropout == 0) {
+          progressBeforeDropout = engine.progress;
+        } else {
+          expect(engine.progress, greaterThan(0));
+        }
+      } else {
+        engine.receive(good, i * 100000);
+      }
+    }
+    expect(progressBeforeDropout, greaterThan(0));
+    expect(engine.calibrated, isTrue, reason: engine.guidance);
+    expect(engine.calibrationSamples, greaterThanOrEqualTo(10));
+  });
   test(
     'visible T-pose calibrates despite depth-tilted world arm estimates',
     () {
