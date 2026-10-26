@@ -2,7 +2,7 @@
 
 # Mimic
 
-**Linux 0.5.0 development build:** webcam landmarks can now drive the bundled skinned character after T-pose calibration. Upper-body tracking, smoothing and loss recovery are implemented; full-body tracking/grounding is experimental. Physical webcam accuracy and performance acceptance remain pending.
+**Linux 0.5.0 development build:** webcam landmarks can now drive the bundled skinned character directly, without mandatory calibration. Upper-body tracking, smoothing and loss recovery are implemented; full-body tracking/grounding is experimental. Physical webcam accuracy and performance acceptance remain pending.
 
 **Android runners are paused at the owner's request.** Current automatic releases are Linux-only. Android source is preserved, and re-enabling/porting waits for Linux validation and owner direction.
 
@@ -20,13 +20,13 @@ Initial baseline: Ubuntu 22.04+ x86_64 (glibc 2.35+). Other distributions/hardwa
 ## Live character tracking
 
 1. Open camera tracking, select a webcam and Start camera.
-2. Choose Upper body first. Show shoulders, elbows, wrists and hips. Hold straight horizontal arms and press Calibrate T-pose until progress completes.
+2. Choose Upper body first. Show shoulders, elbows, wrists and hips. Move naturally; tracking starts when shoulders and hips are confident. An optional T-pose reset is available.
 3. Move: the GLB follows your arms and torso in the same view. Adjust Smoothing; lower values reduce filtering delay.
-4. Mirror preview changes only the displayed camera. Mirror avatar changes anatomical movement mapping and requires recalibration.
-5. Full body • beta additionally needs knees/ankles visible and upright legs during calibration. Root X/Z stay anchored; crouches lower the character without scaling it. Grounding is approximate, with no guaranteed foot locking.
-6. Stop/back/background stops capture and invalidates calibration.
+4. Mirror preview changes only the displayed camera. Mirror avatar changes anatomical movement mapping and restarts direct tracking automatically.
+5. Full body • beta additionally needs knees/ankles visible for leg tracking. Root X/Z stay anchored; crouches lower the character without scaling it. Grounding is approximate, with no guaranteed foot locking.
+6. Stop/back/background stops capture and clears the tracking session.
 
-No webcam? Select **Replay test poses**, then Calibrate T-pose. A persistent REPLAY banner identifies synthetic input; no camera is open and no accuracy is demonstrated. After calibration the replay exercises arms, torso and (in full-body mode) crouching.
+No webcam? Select **Replay test poses**; it starts automatically. A persistent REPLAY banner identifies synthetic input; no camera is open and no accuracy is demonstrated. The replay exercises arms, torso and (in full-body mode) crouching.
 
 [Retargeting conventions and limitations](docs/retargeting.md) · [Linux test checklist](docs/linux_testing.md) · [Development status](docs/development_status.md) · [Performance evidence](docs/performance_report.md).
 
@@ -57,4 +57,4 @@ For a complete AppImage, build Flutter Linux, install `tools/linux/requirements.
 
 The last command is explicitly synthetic replay, not a camera benchmark. Manual Rig control proof remains available for checking joint/skinning behavior independently.
 
-The original CC0 development humanoid has a single skin and 42 joints, including palm and finger articulation. It is not the owner's Mixamo character. Linux finger tracking uses a separately bundled hand model. This prototype is scoped to that small untextured rig; arbitrary GLB import, exact twist, face animation, professional motion capture, precise room movement and production performance claims are not included.
+The original CC0 development humanoid has a single skin and 42 joints, including palm and finger articulation. It is not the owner's Mixamo character. Linux finger tracking uses a separately bundled hand model. Mixamo-style skinned imports use bind-pose-aware mapping but still need physical validation; arbitrary-rig compatibility, exact twist, face animation, professional motion capture, precise room movement and production performance claims are not included.

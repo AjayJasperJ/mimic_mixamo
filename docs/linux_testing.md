@@ -15,7 +15,7 @@ Baseline: Linux x86_64, glibc 2.35+ (Ubuntu 22.04+), a working desktop session a
 4. Open Rig control proof. The bundled GLB is loaded and skinned in Dart; drag to rotate its mesh and move each shoulder/elbow independently. Restore T-pose. This CPU mesh renderer is scoped to the small development asset, not arbitrary textured GLB imports.
 5. Disconnect/reconnect the webcam, deny device access, try an occupied camera, and repeat start/stop 20 times. Report the error message and distribution/kernel/camera model.
 
-After calibrating, the camera pose and hand landmarks drive the skinned development avatar. Finger tracking works when a hand is visible to the camera; it may degrade when hands are small, turned away or occluded. The included hand model is experimental and physical camera validation is still required. No camera recordings are saved or uploaded.
+Without a calibration step, the camera pose and hand landmarks drive the skinned development avatar. Finger tracking works when a hand is visible to the camera; it may degrade when hands are small, turned away or occluded. The included hand model is experimental and physical camera validation is still required. No camera recordings are saved or uploaded.
 
 CI validates the frozen worker with a blank synthetic image through the real bundled MediaPipe model, parses/skins the GLB with fixtures, and launches the packaged AppImage under Xvfb. A blank-image inference test is not a real webcam or pose-accuracy benchmark.
 
@@ -30,16 +30,20 @@ In `flutter run -d linux` debug mode, the app falls back to `tools/linux/mimic_t
 
 ### iPhone as a live camera with Iriun Webcam
 
-Install the [Iriun Webcam Linux client](https://www.iriun.com/) on the computer and Iriun Webcam from the iPhone App Store. Open the desktop client and phone app, connect them using Iriun's pairing instructions, and wait for its virtual webcam to appear. In Mimic, press Refresh webcams and select **iPhone via Iriun Webcam**. If more than one Iriun `/dev/video*` entry appears, try each capture entry; then press Start camera and calibrate. The tracker reads the local Linux video device through OpenCV/V4L2; it does not ingest an iPhone network stream directly. Keep the Iriun client open while tracking. This path is implemented but still needs physical iPhone/Iriun validation on the target Linux machine.
+Install the [Iriun Webcam Linux client](https://www.iriun.com/) on the computer and Iriun Webcam from the iPhone App Store. Open the desktop client and phone app, connect them using Iriun's pairing instructions, and wait for its virtual webcam to appear. In Mimic, press Refresh webcams and select **iPhone via Iriun Webcam**. If more than one Iriun `/dev/video*` entry appears, try each capture entry; then press Start camera and move naturally. The tracker reads the local Linux video device through OpenCV/V4L2; it does not ingest an iPhone network stream directly. Keep the Iriun client open while tracking. This path is implemented but still needs physical iPhone/Iriun validation on the target Linux machine.
 
 ## 0.5.0 live retargeting
 
-Show shoulders, elbows, wrists and hips, start Upper body, then Calibrate T-pose. Hold still while the good-frame count advances to 10 and progress passes 1.2 seconds. Brief landmark dropouts preserve progress; sustained loss restarts the sample window. Read the on-screen guidance if a required joint, confidence threshold or T-pose condition is not met. Verify the left/right arms independently, hand pose and finger curl where the hands are visible, torso lean and neutral return.
+Show shoulders and hips and start Upper body. Begin with bent elbows: tracking must start without waiting for a T-pose and must retain that initial bend. Visible elbows/wrists enable independent arm chains. Optional T-pose reset still supports the previous 10-frame, 1.2-second neutral hold; test it separately. Verify the left/right arms independently, hand pose and finger curl where the hands are visible, torso lean and neutral return.
 
-Change smoothing and compare jitter/delay. Preview mirror must not change avatar mapping; Mirror avatar deliberately swaps movement sides and requires recalibration. Switching camera/body mode must invalidate the old calibration. Hide a wrist or leave frame: hold briefly, blend to neutral and recover smoothly; do not silently freeze forever.
+Change smoothing and compare jitter/delay. Preview mirror must not change avatar mapping; Mirror avatar deliberately swaps movement sides and restarts direct tracking. Switching camera/body mode must clear filters and resume automatically on a valid torso frame. Hide a wrist or leave frame: hold briefly, blend to neutral and recover smoothly; do not silently freeze forever.
 
-For Full body • beta, show knees/ankles and stand upright during calibration. Verify crouching bends joints and changes only display height, never character scale; stepping should lift the correct leg. Approximate foot contact may slide/pitch because the development rig has no independent ankle bones. Root X/Z remain anchored. No accurate walking-through-room claim is made.
+For Full body • beta, show knees/ankles; no straight-leg calibration is required. Verify crouching bends joints and changes only display height, never character scale; stepping should lift the correct leg. Approximate foot contact may slide/pitch because the development rig has no independent ankle bones. Root X/Z remain anchored. No accurate walking-through-room claim is made.
 
-Use labelled Replay test poses for a reproducible no-camera demonstration. It follows the same calibration, solve, filtering and actual GLB skinning path. Copy diagnostics exports source mode and software counters only, not camera images or landmarks.
+Use labelled Replay test poses for a reproducible no-camera demonstration. It follows the same direct solve, filtering and actual GLB skinning path. Copy diagnostics exports source mode and software counters only, not camera images or landmarks.
 
 Run 20 start/stop/background cycles and 10/30-minute real sessions before calling these gates accepted. Record distribution/hardware, build tag, observed defects and timing method. Android builds remain disabled until Linux acceptance and owner direction.
+
+## Imported Mixamo validation (NOT RUN on physical camera)
+
+Import an upright +Y/+Z-forward skinned Mixamo-style GLB/FBX. Start the camera with arms relaxed or bent. Check both shoulders/elbows, left/right mapping, torso lean, and T/A-pose rest-axis differences. Inspect additional spine/shoulder joints for doubled motion or mesh distortion. Test loss/recovery and camera/mirror changes without a mandatory neutral hold. Record the exact asset and conversion path; synthetic axis/hierarchy tests do not establish asset-wide or webcam acceptance. Imported foot contact and exact twist remain experimental.

@@ -2,7 +2,7 @@
 
 Owner-requested implementation removes mandatory Linux T-pose calibration. The solver starts on a usable torso frame and tracks bent arms immediately; optional manual neutral reset remains available. Mixamo rendering now accounts for bind-world axes, actual parent hierarchy, duplicated chest aliases and prefixed finger names. Synthetic tests added for direct startup, partial confidence, rotated imported arm axes and intermediate spine/shoulder nodes. Replay smoke now exercises direct startup.
 
-Local validation: Dart formatter completed; Python asset/worker tests 7/7 passed. Flutter analyze/test require the pinned Flutter tool dependencies; local SDK bootstrap could not complete its dependency fetch. CI validation is pending. Physical webcam, imported Mixamo alignment, AppImage GUI and physical acceptance gates remain NOT RUN for this change. Android remains paused. No release is claimed from these edits.
+Local validation: Dart formatter completed; Python asset/worker tests 7/7 passed. Flutter analyze/test require the pinned Flutter tool dependencies; local SDK bootstrap could not complete its dependency fetch. CI run 40373601503 passed Flutter analysis, all 41 Flutter tests and the Linux release build for code commit 9e0699bc546cad48faffd9967a5d763d4db4755f. AppImage packaging/smoke checks are still pending. Physical webcam, imported Mixamo alignment and physical acceptance gates remain NOT RUN for this change. Android remains paused. No release is claimed from these edits.
 
 ---
 
