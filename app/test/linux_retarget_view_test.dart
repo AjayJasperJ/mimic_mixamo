@@ -37,7 +37,7 @@ void main() {
   });
 
   testWidgets(
-    'labelled replay calibrates and drives the avatar without a camera process',
+    'labelled replay directly drives the avatar without calibration or a camera process',
     (tester) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.linux;
       var now = 1;
@@ -69,6 +69,7 @@ void main() {
         expect(tracker.replaying, isTrue);
         expect(tracker.jpeg, isNull);
         expect(tracker.solver.calibrated, isTrue);
+        expect(tracker.solver.calibrationSamples, 0);
         expect(tracker.solver.validBones, 42);
         expect(
           tracker.solver.pose.localRotations['LeftForeArm']!.angleTo(

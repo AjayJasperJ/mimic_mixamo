@@ -49,6 +49,63 @@ void move(
 
 void main() {
   test(
+    'direct tracking starts from bent arms without capturing them as neutral',
+    () {
+      final engine = RetargetEngine()..attach('test');
+      for (var i = 1; i <= 20; i++) {
+        engine.receive(
+          ReplayFixture.frame('test', i, i * 70000, leftElbow: 1.0),
+          i * 70000,
+        );
+      }
+      expect(engine.calibrated, isTrue);
+      expect(engine.calibrating, isFalse);
+      expect(engine.calibrationSamples, 0);
+      expect(
+        engine.pose.localRotations['LeftForeArm']!.angleTo(Rotation.identity),
+        closeTo(1, .03),
+      );
+      expect(
+        engine.pose.localRotations['RightForeArm']!.angleTo(Rotation.identity),
+        lessThan(1e-6),
+      );
+    },
+  );
+  test('direct start tolerates missing wrists and rejects an absent torso', () {
+    final engine = RetargetEngine()..attach('test');
+    final frame = ReplayFixture.frame('test', 1, 70000);
+    engine.receive(
+      BodyFrame(
+        sessionId: 'test',
+        sequence: 1,
+        capturedAtUs: 70000,
+        world: List<BodyPoint?>.filled(33, null),
+        image: frame.image,
+      ),
+      70000,
+    );
+    expect(engine.calibrated, isFalse);
+    final world = frame.world.toList()..[15] = null;
+    engine.receive(
+      BodyFrame(
+        sessionId: 'test',
+        sequence: 2,
+        capturedAtUs: 140000,
+        world: world,
+        image: frame.image,
+      ),
+      140000,
+    );
+    expect(engine.calibrated, isTrue);
+    expect(engine.validBones, greaterThan(0));
+    expect(engine.state, 'partial');
+    engine.configure(mirror: true);
+    expect(engine.calibrated, isFalse);
+    engine.receive(ReplayFixture.frame('test', 3, 210000), 210000);
+    expect(engine.calibrated, isTrue);
+    expect(engine.calibrationSamples, 0);
+  });
+  test(
     'quaternion antiparallel rotation and shortest-path sign interpolation are finite',
     () {
       final flip = Rotation.fromTo(V3.up, const V3(0, -1, 0));

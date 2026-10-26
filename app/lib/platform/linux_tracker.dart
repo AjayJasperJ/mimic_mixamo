@@ -239,7 +239,7 @@ class LinuxTracker extends ChangeNotifier {
                         : 'Camera';
                     running = true;
                     status =
-                        '$_activeSourceLabel live • calibrate before driving the avatar';
+                        '$_activeSourceLabel live • direct tracking, no calibration required';
                     _startPoseClock();
                     _next(token);
                     _changed();
