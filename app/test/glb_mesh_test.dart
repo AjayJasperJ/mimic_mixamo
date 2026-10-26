@@ -161,20 +161,44 @@ void main() {
       final bytes = await File(
         'assets/characters/development_humanoid.glb',
       ).readAsBytes();
-      final reference = GlbMesh.parse(bytes), imported = GlbMesh.parse(bytes);
-      final chest = imported.nodes.indexWhere((n) => n['name'] == 'Chest');
-      final spine = imported.nodes.length;
-      imported.nodes.add({'name': 'mixamorig:Spine1'});
-      imported.parents.add(imported.parents[chest]);
-      imported.skinJoints.add(spine);
-      imported.inverseBinds.add(reference.inverseBinds.first.clone());
-      imported.parents[chest] = spine;
-      imported.nodes[chest]['name'] = 'mixamorig:Spine2';
-      final arm = imported.nodes.indexWhere((n) => n['name'] == 'LeftUpperArm');
-      final shoulder = imported.nodes.length;
-      imported.nodes.add({'name': 'mixamorig:LeftShoulder'});
-      imported.parents.add(chest);
-      imported.parents[arm] = shoulder;
+      final reference = GlbMesh.parse(bytes);
+      final source = ByteData.sublistView(bytes);
+      final jsonLength = source.getUint32(12, Endian.little);
+      final document =
+          jsonDecode(utf8.decode(bytes.sublist(20, 20 + jsonLength)))
+              as Map<String, dynamic>;
+      final nodes = document['nodes'] as List<dynamic>;
+      final chest = nodes.indexWhere((n) => n['name'] == 'Chest');
+      final hips = nodes.indexWhere((n) => n['name'] == 'Hips');
+      final arm = nodes.indexWhere((n) => n['name'] == 'LeftUpperArm');
+      final spine = nodes.length;
+      nodes.add({
+        'name': 'mixamorig:Spine1',
+        'children': [chest],
+      });
+      final hipChildren = nodes[hips]['children'] as List<dynamic>;
+      hipChildren[hipChildren.indexOf(chest)] = spine;
+      nodes[chest]['name'] = 'mixamorig:Spine2';
+      final shoulder = nodes.length;
+      nodes.add({
+        'name': 'mixamorig:LeftShoulder',
+        'children': [arm],
+      });
+      final chestChildren = nodes[chest]['children'] as List<dynamic>;
+      chestChildren[chestChildren.indexOf(arm)] = shoulder;
+      final encoded = utf8.encode(jsonEncode(document));
+      final padded = (encoded.length + 3) & ~3;
+      final binaryChunk = bytes.sublist(20 + jsonLength);
+      final rebuilt = Uint8List(20 + padded + binaryChunk.length);
+      rebuilt.setRange(0, 12, bytes);
+      final out = ByteData.sublistView(rebuilt);
+      out.setUint32(8, rebuilt.length, Endian.little);
+      out.setUint32(12, padded, Endian.little);
+      out.setUint32(16, 0x4e4f534a, Endian.little);
+      rebuilt.setRange(20, 20 + encoded.length, encoded);
+      rebuilt.fillRange(20 + encoded.length, 20 + padded, 0x20);
+      rebuilt.setRange(20 + padded, rebuilt.length, binaryChunk);
+      final imported = GlbMesh.parse(rebuilt);
       final pose = RigPose(
         localRotations: {
           'Hips': Rotation.identity,

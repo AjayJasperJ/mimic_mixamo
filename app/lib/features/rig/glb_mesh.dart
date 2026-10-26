@@ -397,7 +397,7 @@ class GlbMesh {
   Map<String, int> _buildMappedNodes() {
     final result = <String, int>{};
     int depth(int i) => parents[i] < 0 ? 0 : 1 + depth(parents[i]);
-    for (final i in skinJoints) {
+    for (var i = 0; i < nodes.length; i++) {
       final name = _canonicalBone(nodes[i]['name']?.toString() ?? '');
       final previous = result[name];
       // Spine1 and Spine2 are aliases of Chest. Drive only the highest chest
