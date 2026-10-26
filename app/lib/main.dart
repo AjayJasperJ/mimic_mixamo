@@ -100,7 +100,7 @@ class _SessionScreenState extends State<SessionScreen>
               ),
               const SizedBox(height: 12),
               const Text(
-                'Linux live mimicry • calibration + skinned GLB',
+                'Linux live mimicry • direct tracking + skinned GLB',
                 style: TextStyle(color: Color(0xff69dfbf)),
               ),
               const SizedBox(height: 16),
@@ -189,7 +189,7 @@ class _SessionScreenState extends State<SessionScreen>
               ),
               const SizedBox(height: 24),
               const Text(
-                'Linux: calibrate a T-pose, then drive the avatar. Android builds are paused until Linux validation succeeds.',
+                'Linux: start the camera and move; no calibration required. Android builds are paused until Linux validation succeeds.',
                 style: TextStyle(color: Colors.white70),
               ),
             ],

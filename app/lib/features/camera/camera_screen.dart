@@ -140,7 +140,7 @@ class _CameraScreenState extends State<CameraScreen> {
         const SizedBox(height: 16),
         Text(
           _linux
-              ? 'Linux: hold a stable T-pose to calibrate, then move to drive the avatar. Full-body grounding is experimental; root X/Z stays anchored.'
+              ? 'Linux: start the camera and move to drive the avatar; no calibration required. Full-body grounding is experimental; root X/Z stays anchored.'
               : 'Android retargeting is paused while Linux is validated. The existing Android screen shows camera landmarks only.',
         ),
       ],

@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:vector_math/vector_math_64.dart' as v;
 import 'rig_pose.dart';
+import '../retargeting/pose_math.dart';
+import '../retargeting/rig_definition.dart';
 
 Map<String, Object?> _object(Object? value) =>
     Map<String, Object?>.from(value as Map<Object?, Object?>);
@@ -353,6 +355,58 @@ class GlbMesh {
     return mesh;
   }
 
+  late final List<v.Matrix4> _bindWorld = _buildBindWorld();
+  late final Map<String, int> _mappedNodes = _buildMappedNodes();
+
+  static Rotation _rotation(v.Matrix4 matrix) {
+    final q = v.Quaternion.identity();
+    matrix.decompose(v.Vector3.zero(), q, v.Vector3.zero());
+    return Rotation(q.x, q.y, q.z, q.w).normalized();
+  }
+
+  v.Matrix4 _restLocal(int index) {
+    final node = nodes[index];
+    if (node['matrix'] != null) {
+      return v.Matrix4.fromList(_numbers(node['matrix']));
+    }
+    final q = _numbers(node['rotation'] ?? [0, 0, 0, 1]);
+    return v.Matrix4.compose(
+      v.Vector3.array(_numbers(node['translation'] ?? [0, 0, 0])),
+      v.Quaternion(q[0], q[1], q[2], q[3]),
+      v.Vector3.array(_numbers(node['scale'] ?? [1, 1, 1])),
+    );
+  }
+
+  List<v.Matrix4> _buildBindWorld() {
+    final cache = List<v.Matrix4?>.filled(nodes.length, null);
+    final visiting = <int>{};
+    v.Matrix4 world(int i) {
+      if (cache[i] != null) return cache[i]!;
+      if (!visiting.add(i)) throw const FormatException('Cyclic rig hierarchy');
+      final local = _restLocal(i);
+      cache[i] = parents[i] < 0
+          ? local
+          : (world(parents[i]).clone()..multiply(local));
+      visiting.remove(i);
+      return cache[i]!;
+    }
+
+    return List.generate(nodes.length, world);
+  }
+
+  Map<String, int> _buildMappedNodes() {
+    final result = <String, int>{};
+    int depth(int i) => parents[i] < 0 ? 0 : 1 + depth(parents[i]);
+    for (final i in skinJoints) {
+      final name = _canonicalBone(nodes[i]['name']?.toString() ?? '');
+      final previous = result[name];
+      // Spine1 and Spine2 are aliases of Chest. Drive only the highest chest
+      // joint; applying the same torso rotation twice exaggerates the motion.
+      if (previous == null || depth(i) > depth(previous)) result[name] = i;
+    }
+    return result;
+  }
+
   List<v.Vector3> posedVertices(RigPose pose) {
     final world = List<v.Matrix4?>.filled(nodes.length, null);
     final visiting = List<bool>.filled(nodes.length, false);
@@ -362,41 +416,89 @@ class GlbMesh {
       'RightUpperArm',
       'RightForeArm',
     ], pose.angles);
+    final canonicalGlobals = <String, Rotation>{};
+    Rotation canonicalGlobal(String bone) {
+      if (canonicalGlobals.containsKey(bone)) return canonicalGlobals[bone]!;
+      final parent = DevelopmentRig.parents[bone];
+      return canonicalGlobals[bone] =
+          (parent == null ? Rotation.identity : canonicalGlobal(parent)) *
+          (pose.localRotations[bone] ?? Rotation.identity);
+    }
+
     v.Matrix4 global(int index) {
       if (world[index] != null) return world[index]!;
       if (visiting[index]) throw const FormatException('Cyclic rig hierarchy');
       visiting[index] = true;
       final node = nodes[index];
-      final t = node['translation'] == null
-          ? [0.0, 0.0, 0.0]
-          : _numbers(node['translation']);
-      if (node['name'] == 'Hips') t[1] += pose.rootYOffset;
-      final q = node['rotation'] == null
-          ? [0.0, 0.0, 0.0, 1.0]
-          : _numbers(node['rotation']);
-      final s = node['scale'] == null
-          ? [1.0, 1.0, 1.0]
-          : _numbers(node['scale']);
-      final local = node['matrix'] != null
-          ? v.Matrix4.fromList(_numbers(node['matrix']))
-          : v.Matrix4.compose(
-              v.Vector3.array(t),
-              v.Quaternion(q[0], q[1], q[2], q[3]),
-              v.Vector3.array(s),
+      final name = _canonicalBone(node['name']?.toString() ?? '');
+      final local = _restLocal(index);
+      final parentWorld = parents[index] < 0
+          ? v.Matrix4.identity()
+          : global(parents[index]);
+      final tracked = pose.localRotations[name];
+      if (tracked != null && _mappedNodes[name] == index) {
+        final bindRotation = _rotation(_bindWorld[index]);
+        final canonical = canonicalGlobal(name);
+        Rotation? desired;
+        if (name == 'Hips' || name == 'Chest') {
+          desired = canonical * bindRotation;
+        } else {
+          final segment = DevelopmentRig.segments[name];
+          String? endpoint;
+          if (name.endsWith('UpperArm'))
+            endpoint = name.replaceAll('UpperArm', 'ForeArm');
+          if (name.endsWith('ForeArm'))
+            endpoint = name.replaceAll('ForeArm', 'Hand');
+          if (name.endsWith('Thigh'))
+            endpoint = name.replaceAll('Thigh', 'Shin');
+          if (name.endsWith('Shin')) endpoint = name.replaceAll('Shin', 'Foot');
+          if (name.endsWith('Hand'))
+            endpoint = name.replaceAll('Hand', 'Middle1');
+          if (RegExp(r'[12]$').hasMatch(name))
+            endpoint =
+                name.substring(0, name.length - 1) +
+                (int.parse(name[name.length - 1]) + 1).toString();
+          final endIndex = _mappedNodes[endpoint];
+          if (segment != null && endIndex != null) {
+            final start = _bindWorld[index].getTranslation();
+            final end = _bindWorld[endIndex].getTranslation();
+            final direction = V3(
+              end.x - start.x,
+              end.y - start.y,
+              end.z - start.z,
             );
-      final angle = angles[node['name']] ?? 0;
-      final tracked =
-          pose.localRotations[_canonicalBone(node['name']?.toString() ?? '')] ??
-          pose.localRotations[node['name']];
-      local.multiply(
-        tracked == null
-            ? v.Matrix4.rotationZ(angle * math.pi / 180)
-            : v.Matrix4.compose(
-                v.Vector3.zero(),
-                v.Quaternion(tracked.x, tracked.y, tracked.z, tracked.w),
-                v.Vector3.all(1),
-              ),
-      );
+            if (direction.length > 1e-7) {
+              desired =
+                  canonical *
+                  Rotation.fromTo(segment.$3, direction).inverse *
+                  bindRotation;
+            }
+          }
+          // Terminal joints have no child direction. Transfer canonical swing
+          // through the bind orientation rather than assuming identity axes.
+          desired ??= canonical * bindRotation;
+        }
+        final parentRotation = _rotation(parentWorld);
+        final localRotation = parentRotation.inverse * desired;
+        final translation = v.Vector3.zero(), scale = v.Vector3.zero();
+        local.decompose(translation, v.Quaternion.identity(), scale);
+        local.setFrom(
+          v.Matrix4.compose(
+            translation,
+            v.Quaternion(
+              localRotation.x,
+              localRotation.y,
+              localRotation.z,
+              localRotation.w,
+            ),
+            scale,
+          ),
+        );
+      } else if (pose.localRotations.isEmpty) {
+        local.multiply(
+          v.Matrix4.rotationZ((angles[name] ?? 0) * math.pi / 180),
+        );
+      }
       final result = parents[index] == -1
           ? local
           : (global(parents[index]).clone()..multiply(local));
@@ -417,6 +519,7 @@ class GlbMesh {
         matrices[vertex.joints[i]].transform3(transformed);
         result.add(transformed..scale(vertex.weights[i]));
       }
+      result.y += pose.rootYOffset;
       return result;
     }).toList();
   }
@@ -426,9 +529,9 @@ class GlbMesh {
         .split(':')
         .last
         .replaceAll(RegExp(r'^mixamorig\d*'), '');
-    final finger = name.replaceFirst(
+    final finger = name.replaceFirstMapped(
       RegExp(r'^(Left|Right)Hand(Thumb|Index|Middle|Ring|Pinky)'),
-      r'$1$2',
+      (match) => '${match[1]}${match[2]}',
     );
     const aliases = <String, String>{
       'LeftArm': 'LeftUpperArm',

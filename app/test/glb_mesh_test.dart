@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
+import 'package:vector_math/vector_math_64.dart' as v;
+import 'package:mimic_mixamo/features/retargeting/pose_math.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:archive/archive.dart';
@@ -98,6 +101,98 @@ Uint8List _withTestTexture(Uint8List original) {
 }
 
 void main() {
+  test(
+    'Mixamo names and rotated bind axes preserve the tracked arm direction',
+    () async {
+      final bytes = await File(
+        'assets/characters/development_humanoid.glb',
+      ).readAsBytes();
+      final reference = GlbMesh.parse(bytes), imported = GlbMesh.parse(bytes);
+      // Re-express the same arm with a 90-degree local bind axis and a
+      // compensating forearm transform. Geometry and bind joint origins agree.
+      final arm = imported.nodes.indexWhere((n) => n['name'] == 'LeftUpperArm');
+      final fore = imported.nodes.indexWhere((n) => n['name'] == 'LeftForeArm');
+      final q = v.Quaternion.axisAngle(v.Vector3(0, 0, 1), math.pi / 2);
+      imported.nodes[arm]['rotation'] = [q.x, q.y, q.z, q.w];
+      imported.nodes[fore]['rotation'] = [-q.x, -q.y, -q.z, q.w];
+      imported.nodes[fore]['translation'] = [0.0, -.40, 0.0];
+      imported.inverseBinds[imported.skinJoints.indexOf(arm)].setFrom(
+        v.Matrix4.rotationZ(-math.pi / 2)
+          ..multiply(reference.inverseBinds[reference.skinJoints.indexOf(arm)]),
+      );
+      for (final node in imported.nodes) {
+        var name = node['name']?.toString() ?? '';
+        name = name.replaceFirstMapped(
+          RegExp(r'^(Left|Right)(Thumb|Index|Middle|Ring|Pinky)'),
+          (m) => '${m[1]}Hand${m[2]}',
+        );
+        name = name
+            .replaceAll('UpperArm', 'Arm')
+            .replaceAll('Thigh', 'UpLeg')
+            .replaceAll('Shin', 'Leg');
+        node['name'] = 'mixamorig:$name';
+      }
+      final pose = RigPose(
+        localRotations: {
+          'Hips': Rotation.identity,
+          'Chest': Rotation.identity,
+          'LeftUpperArm': Rotation.axis(V3.up, .5),
+          'LeftForeArm': Rotation.axis(const V3(0, 0, 1), .8),
+        },
+      );
+      final expected = reference.posedVertices(pose),
+          actual = imported.posedVertices(pose);
+      for (var i = 0; i < actual.length; i++) {
+        expect(
+          (actual[i] - expected[i]).length,
+          lessThan(1e-5),
+          reason: 'vertex $i',
+        );
+      }
+      final raised = imported.posedVertices(
+        RigPose(localRotations: pose.localRotations, rootYOffset: .1),
+      );
+      expect(raised.first.y - actual.first.y, closeTo(.1, 1e-6));
+    },
+  );
+  test(
+    'extra Mixamo spine and shoulder nodes do not double torso motion',
+    () async {
+      final bytes = await File(
+        'assets/characters/development_humanoid.glb',
+      ).readAsBytes();
+      final reference = GlbMesh.parse(bytes), imported = GlbMesh.parse(bytes);
+      final chest = imported.nodes.indexWhere((n) => n['name'] == 'Chest');
+      final spine = imported.nodes.length;
+      imported.nodes.add({'name': 'mixamorig:Spine1'});
+      imported.parents.add(imported.parents[chest]);
+      imported.skinJoints.add(spine);
+      imported.inverseBinds.add(reference.inverseBinds.first.clone());
+      imported.parents[chest] = spine;
+      imported.nodes[chest]['name'] = 'mixamorig:Spine2';
+      final arm = imported.nodes.indexWhere((n) => n['name'] == 'LeftUpperArm');
+      final shoulder = imported.nodes.length;
+      imported.nodes.add({'name': 'mixamorig:LeftShoulder'});
+      imported.parents.add(chest);
+      imported.parents[arm] = shoulder;
+      final pose = RigPose(
+        localRotations: {
+          'Hips': Rotation.identity,
+          'Chest': Rotation.axis(const V3(0, 0, 1), .3),
+          'LeftUpperArm': Rotation.axis(const V3(0, 0, 1), -.3),
+        },
+      );
+      final expected = reference.posedVertices(pose),
+          actual = imported.posedVertices(pose);
+      for (var i = 0; i < actual.length; i++) {
+        expect(
+          (actual[i] - expected[i]).length,
+          lessThan(1e-5),
+          reason: 'vertex $i',
+        );
+      }
+    },
+  );
   test(
     'bundled GLB bind matrices preserve rest mesh and drive only the selected arm',
     () async {

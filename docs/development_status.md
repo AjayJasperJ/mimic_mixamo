@@ -1,3 +1,11 @@
+# Direct Mixamo tracking update — 26 October 2026
+
+Owner-requested implementation removes mandatory Linux T-pose calibration. The solver starts on a usable torso frame and tracks bent arms immediately; optional manual neutral reset remains available. Mixamo rendering now accounts for bind-world axes, actual parent hierarchy, duplicated chest aliases and prefixed finger names. Synthetic tests added for direct startup, partial confidence, rotated imported arm axes and intermediate spine/shoulder nodes. Replay smoke now exercises direct startup.
+
+Local validation: Dart formatter completed; Python asset/worker tests 7/7 passed. Flutter analyze/test require the pinned Flutter tool dependencies; local SDK bootstrap could not complete its dependency fetch. CI validation is pending. Physical webcam, imported Mixamo alignment, AppImage GUI and physical acceptance gates remain NOT RUN for this change. Android remains paused. No release is claimed from these edits.
+
+---
+
 # Development status — Linux 0.5.0 / 24 October 2026
 
 Owner instruction: continue the proposed development steps on Linux and disable Android runners until Linux is validated. Android job is explicitly skipped; release depends on Linux only and publishes no APK. Android implementation remains in source, not automatically re-enabled by a passing Linux job.

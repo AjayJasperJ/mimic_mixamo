@@ -11,7 +11,7 @@ class RetargetEngine {
   bool calibrated = false, calibrating = false;
   double progress = 0;
   String state = 'idle',
-      guidance = 'Start tracking, then hold a T-pose and calibrate';
+      guidance = 'Start the camera and move naturally; no calibration required';
   int rejectedFrames = 0, validBones = 0, solverUs = 0;
   int _observedBones = 0;
   double poseRate = 0;
@@ -45,7 +45,7 @@ class RetargetEngine {
     _rateFrames = 0;
     _clearCalibration();
     state = 'ready';
-    guidance = 'Hold a T-pose and select Calibrate';
+    guidance = 'Move naturally with shoulders and hips visible';
   }
 
   void stop() {
@@ -60,7 +60,7 @@ class RetargetEngine {
     if (mirror != null) mirrorMovement = mirror;
     _clearCalibration();
     state = 'ready';
-    guidance = 'Configuration changed. Hold a T-pose and recalibrate.';
+    guidance = 'Configuration changed. Direct tracking resumes automatically.';
   }
 
   void _clearCalibration() {
@@ -72,6 +72,7 @@ class RetargetEngine {
     _lastCalibrationGood = 0;
     _sumX = V3.zero;
     _sumUp = V3.zero;
+    _reference = Rotation.identity;
     _correction.clear();
     _lastGood.clear();
     _lastGoodAt.clear();
@@ -129,8 +130,16 @@ class RetargetEngine {
     final watch = Stopwatch()..start();
     if (calibrating)
       _calibrate(frame, arrivalUs);
-    else if (calibrated)
-      _solve(frame, arrivalUs);
+    else {
+      // Fixed camera/solver axes, never treat the first observed limb pose as
+      // neutral. Bent arms and crouches must drive the avatar immediately.
+      if (!calibrated && _basis(frame) != null) {
+        calibrated =
+            true; // Compatibility: solver ready, not manual calibration.
+        progress = 1;
+      }
+      if (calibrated) _solve(frame, arrivalUs);
+    }
     solverUs = watch.elapsedMicroseconds;
     advance(arrivalUs);
     return true;

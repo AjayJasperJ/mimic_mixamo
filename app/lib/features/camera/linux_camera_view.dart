@@ -28,7 +28,7 @@ class _LinuxCameraViewState extends State<LinuxCameraView>
     _tracker = widget.tracker ?? LinuxTracker();
     if (widget.autoReplay) {
       _tracker.configure(fullBody: true);
-      _tracker.startReplay(calibrate: true);
+      _tracker.startReplay();
     } else {
       unawaited(_tracker.refreshDevices());
     }
@@ -53,7 +53,7 @@ class _LinuxCameraViewState extends State<LinuxCameraView>
     child: _tracker.jpeg == null && !_tracker.replaying
         ? const Center(
             child: Text(
-              'Start the webcam or labelled replay, then calibrate your T-pose.',
+              'Start the webcam or labelled replay and move naturally. No T-pose required.',
             ),
           )
         : LayoutBuilder(
@@ -191,9 +191,7 @@ class _LinuxCameraViewState extends State<LinuxCameraView>
                 onPressed: _tracker.running
                     ? () => _tracker.beginCalibration()
                     : null,
-                child: Text(
-                  solver.calibrated ? 'Recalibrate T-pose' : 'Calibrate T-pose',
-                ),
+                child: Text('Optional T-pose reset'),
               ),
               FilterChip(
                 label: const Text('Mirror preview'),
@@ -257,13 +255,13 @@ class _LinuxCameraViewState extends State<LinuxCameraView>
               !solver.calibrated &&
               !solver.calibrating)
             const Text(
-              'Landmarks are detected, but the avatar stays neutral until you select Calibrate T-pose and hold the pose steady.',
+              'Waiting for confident shoulders and hips. Tracking starts automatically.',
             ),
           if (!solver.calibrated)
             Text(
               solver.fullBody
-                  ? 'Calibration needs shoulders, elbows, wrists, hips, knees and ankles.'
-                  : 'Calibration needs shoulders, elbows, wrists and hips.',
+                  ? 'Show shoulders and hips; visible knees and ankles enable leg tracking.'
+                  : 'Show shoulders and hips; visible elbows and wrists enable arm tracking.',
             ),
           if (solver.calibrating) ...[
             LinearProgressIndicator(value: solver.progress),

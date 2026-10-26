@@ -1,3 +1,5 @@
+> Linux direct tracking: start the camera and move naturally with shoulders and hips visible. No T-pose calibration is required. “Optional T-pose reset” is available for an explicit neutral reset. Imported Mixamo-style rigs now use bind-pose-aware mapping; physical webcam alignment is still awaiting validation.
+
 # Mimic
 
 **Linux 0.5.0 development build:** webcam landmarks can now drive the bundled skinned character after T-pose calibration. Upper-body tracking, smoothing and loss recovery are implemented; full-body tracking/grounding is experimental. Physical webcam accuracy and performance acceptance remain pending.
